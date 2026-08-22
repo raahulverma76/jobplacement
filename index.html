@@ -1,0 +1,88 @@
+# HTML Dashboard Generation
+html_content = """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Dashboard</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        .filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        th { background-color: #4CAF50; color: white; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Job Openings</h2>
+        <div class="filters">
+            <input type="text" id="roleInput" placeholder="Filter by Role..." onkeyup="filterTable()">
+            <select id="locationInput" onchange="filterTable()">
+                <option value="">All Locations</option>
+                <option value="SRAFA BAZZAR">SRAFA BAZZAR</option>
+                <option value="JALANDHAR BYPASS">JALANDHAR BYPASS</option>
+                <option value="MOCHPURA BAZAR">MOCHPURA BAZAR</option>
+            </select>
+        </div>
+        <table id="jobTable">
+            <thead>
+                <tr>
+                    <th>Job Role</th>
+                    <th>Gender</th>
+                    <th>Salary Range</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody">
+                <!-- Data will be populated via JS -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        const jobs = [
+            {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR"},
+            {role: "SECURITY GUARD", gender: "MALE", salary: "10K-15K", loc: "SRAFA BAZZAR"},
+            {role: "CONTENT CRETAOR", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR"},
+            {role: "RECEPTION", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR"},
+            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "20K-25K", loc: "SRAFA BAZZAR"},
+            {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR"},
+            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "25K-30K", loc: "JALANDHAR BYPASS"},
+            {role: "FIELED SALES", gender: "MALE", salary: "20K-25K", loc: "JALANDHAR BYPASS"},
+            {role: "DIGITAL MARKETING", gender: "BOTH", salary: "10K-18K", loc: "JALANDHAR BYPASS"},
+            {role: "ADMIN EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "MOCHPURA BAZAR"},
+            {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "MOCHPURA BAZAR"}
+        ];
+
+        function populateTable(data) {
+            const body = document.getElementById('tableBody');
+            body.innerHTML = '';
+            data.forEach(job => {
+                body.innerHTML += `<tr><td>${job.role}</td><td>${job.gender}</td><td>${job.salary}</td><td>${job.loc}</td></tr>`;
+            });
+        }
+
+        function filterTable() {
+            const role = document.getElementById('roleInput').value.toUpperCase();
+            const loc = document.getElementById('locationInput').value.toUpperCase();
+            const filtered = jobs.filter(j => 
+                j.role.toUpperCase().includes(role) && 
+                (loc === "" || j.loc.toUpperCase().includes(loc))
+            );
+            populateTable(filtered);
+        }
+
+        populateTable(jobs);
+    </script>
+</body>
+</html>
+"""
+
+with open("index.html", "w") as f:
+    f.write(html_content)
