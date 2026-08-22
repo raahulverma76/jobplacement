@@ -1,12 +1,4 @@
-# Let's combine everything into a single, flawless, comprehensive index.html file:
-# 1. Multi-select checkboxes for Location, Salary, and Gender.
-# 2. Search input box for instant role matching.
-# 3. Clean line / table view (no cards).
-# 4. Mobile responsive layout.
-# 5. Top "Post a New Job" button linking to a Google Form.
-# 6. Automatic live data loading from a Google Sheet CSV export option (with fallback to hardcoded mock data so it works instantly).
-
-complete_html_code = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -212,9 +204,9 @@ complete_html_code = """<!DOCTYPE html>
         <header>
             <div class="header-title">
                 <h1><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</h1>
-                <p>Live multi-filter line view with direct Google Form submission</p>
+                <p>Live Google Sheets integration with multi-select filters</p>
             </div>
-            <!-- REPLACE THE LINK BELOW WITH YOUR ACTUAL GOOGLE FORM LINK -->
+            <!-- Update your Google Form link here -->
             <a href="https://forms.gle/YOUR_GOOGLE_FORM_LINK" target="_blank" class="btn-post">
                 <i class="fa-solid fa-plus-circle"></i> Post a New Job
             </a>
@@ -266,7 +258,7 @@ complete_html_code = """<!DOCTYPE html>
         </div>
 
         <div class="stats-bar">
-            <span id="resultCount">Showing 0 jobs</span>
+            <span id="resultCount">Loading jobs...</span>
             <button onclick="resetFilters()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-rotate-right"></i> Reset Filters</button>
         </div>
 
@@ -290,8 +282,9 @@ complete_html_code = """<!DOCTYPE html>
     </div>
 
     <script>
-        // Default Mock Data (You can replace or connect this array via Google Sheets CSV fetch)
-        let jobsData = [
+        const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
+
+        let fallbackData = [
             {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
             {role: "SECURITY GUARD", gender: "MALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
             {role: "CONTENT CREATOR", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
@@ -308,14 +301,47 @@ complete_html_code = """<!DOCTYPE html>
             {role: "ACCOUNT EXECUTIVE", gender: "FEMALE", salary: "10K-14K", loc: "SUNDER NAGAR", city: "LUDHIANA"}
         ];
 
+        let jobsData = [];
         let locations = [];
         let salaries = [];
         let genders = [];
 
-        function initApp() {
+        async function initApp() {
+            try {
+                const response = await fetch(sheetCsvUrl);
+                if (!response.ok) throw new Error("Network response was not ok");
+                const csvText = await response.text();
+                jobsData = parseCSV(csvText);
+                if (jobsData.length === 0) throw new Error("Empty CSV data");
+            } catch (error) {
+                console.warn("Could not load Google Sheet live, using fallback mock data.", error);
+                jobsData = fallbackData;
+            }
+
             extractFilterOptions();
             initDropdowns();
             renderTable(jobsData);
+        }
+
+        function parseCSV(text) {
+            let lines = text.split("\n");
+            let result = [];
+            if (lines.length < 2) return result;
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                let currentLine = lines[i].split(",");
+                if (currentLine.length >= 5) {
+                    result.push({
+                        role: currentLine[0] ? currentLine[0].replace(/["']/g, "").trim() : "",
+                        gender: currentLine[1] ? currentLine[1].replace(/["']/g, "").trim().toUpperCase() : "",
+                        salary: currentLine[2] ? currentLine[2].replace(/["']/g, "").trim() : "",
+                        loc: currentLine[3] ? currentLine[3].replace(/["']/g, "").trim().toUpperCase() : "",
+                        city: currentLine[4] ? currentLine[4].replace(/["']/g, "").trim().toUpperCase() : ""
+                    });
+                }
+            }
+            return result.length > 0 ? result : fallbackData;
         }
 
         function extractFilterOptions() {
@@ -334,11 +360,13 @@ complete_html_code = """<!DOCTYPE html>
             const container = document.getElementById(dropdownId);
             let html = '';
             items.forEach(item => {
-                html += `
-                    <label class="dropdown-item">
-                        <input type="checkbox" value="${item}" onchange="filterData()"> ${item}
-                    </label>
-                `;
+                if(item) {
+                    html += `
+                        <label class="dropdown-item">
+                            <input type="checkbox" value="${item}" onchange="filterData()"> ${item}
+                        </label>
+                    `;
+                }
             });
             container.innerHTML = html;
         }
@@ -433,12 +461,7 @@ complete_html_code = """<!DOCTYPE html>
             tbody.innerHTML = html;
         }
 
-        // Run application on load
         initApp();
     </script>
 </body>
 </html>
-"""
-
-with open("index.html", "w", encoding="utf-8") as f:
-    f.write(complete_html_code)
