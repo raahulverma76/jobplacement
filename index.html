@@ -1,88 +1,327 @@
-# HTML Dashboard Generation
-html_content = """
-<!DOCTYPE html>
+# Let's create an upgraded, premium, glassmorphism-style UI with interactive card layouts for mobile + modern desktop design.
+pro_html = """<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Job Dashboard</title>
+    <title>Job Openings | Career Portal</title>
+    <!-- Google Fonts & FontAwesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background-color: #f4f4f9; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h2 { text-align: center; color: #333; }
-        .filters { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        input, select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex: 1; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
-        th { background-color: #4CAF50; color: white; }
-        tr:nth-child(even) { background-color: #f2f2f2; }
+        :root {
+            --primary: #4f46e5;
+            --primary-dark: #4338ca;
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            --card-bg: #ffffff;
+            --text-main: #1f2937;
+            --text-muted: #6b7280;
+            --border-color: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: var(--bg-gradient); min-height: 100vh; padding: 20px; color: var(--text-main); }
+
+        .wrapper { max-width: 1100px; margin: 0 auto; }
+
+        /* Header Styling */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        header h1 { font-size: 2.2rem; color: #111827; font-weight: 700; margin-bottom: 8px; }
+        header p { color: var(--text-muted); font-size: 1rem; }
+
+        /* Dashboard Stats / Counters */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .stat-icon {
+            width: 48px; height: 48px; border-radius: 10px; background: #e0e7ff; color: var(--primary);
+            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+        }
+        .stat-info h3 { font-size: 1.4rem; font-weight: 700; color: #111827; }
+        .stat-info p { font-size: 0.85rem; color: var(--text-muted); }
+
+        /* Filter Controls */
+        .controls-container {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        .search-box, .filter-box {
+            flex: 1;
+            min-width: 220px;
+            position: relative;
+        }
+        .search-box i, .filter-box i {
+            position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted);
+        }
+        .search-box input, .filter-box select {
+            width: 100%; padding: 12px 14px 12px 42px;
+            border: 1px solid var(--border-color); border-radius: 8px;
+            font-size: 0.95rem; outline: none; background: #f9fafb; transition: all 0.3s;
+        }
+        .search-box input:focus, .filter-box select:focus {
+            border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Responsive Grid / Cards View */
+        .jobs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+        }
+        .job-card {
+            background: var(--card-bg);
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-top: 4px solid var(--primary);
+            position: relative;
+            overflow: hidden;
+        }
+        .job-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+        }
+        .job-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        .job-title { font-size: 1.15rem; font-weight: 700; color: #111827; }
+        .badge {
+            font-size: 0.75rem; font-weight: 600; padding: 4px 10px; border-radius: 20px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+        }
+        .badge-female { background: #fce7f3; color: #db2777; }
+        .badge-male { background: #e0f2fe; color: #0284c7; }
+        .badge-both { background: #f3e8ff; color: #9333ea; }
+
+        .job-details {
+            margin: 12px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .job-detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        .job-detail-item i { color: var(--primary); width: 16px; text-align: center; }
+        .salary-highlight {
+            font-weight: 600; color: #059669; font-size: 1rem;
+        }
+
+        .job-footer {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .location-tag {
+            font-size: 0.85rem; font-weight: 500; color: #4b5563;
+            background: #f3f4f6; padding: 4px 10px; border-radius: 6px;
+        }
+        .apply-btn {
+            background: var(--primary); color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; font-weight: 600; font-size: 0.85rem; cursor: pointer; transition: background 0.2s;
+            text-decoration: none;
+        }
+        .apply-btn:hover { background: var(--primary-dark); }
+
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 40px;
+            background: white;
+            border-radius: 12px;
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        /* Mobile Adjustments */
+        @media(max-width: 600px) {
+            body { padding: 10px; }
+            header h1 { font-size: 1.7rem; }
+            .controls-container { padding: 12px; }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Job Openings</h2>
-        <div class="filters">
-            <input type="text" id="roleInput" placeholder="Filter by Role..." onkeyup="filterTable()">
-            <select id="locationInput" onchange="filterTable()">
-                <option value="">All Locations</option>
-                <option value="SRAFA BAZZAR">SRAFA BAZZAR</option>
-                <option value="JALANDHAR BYPASS">JALANDHAR BYPASS</option>
-                <option value="MOCHPURA BAZAR">MOCHPURA BAZAR</option>
-            </select>
+    <div class="wrapper">
+        <header>
+            <h1><i class="fa-solid fa-briefcase"></i> Latest Job Openings</h1>
+            <p>Explore open roles, salary brackets, and preferred locations instantly.</p>
+        </header>
+
+        <!-- Stats Overview -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="stat-info">
+                    <h3 id="totalJobs">0</h3>
+                    <p>Total Openings</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fa-solid fa-location-dot"></i></div>
+                <div class="stat-info">
+                    <h3 id="totalLocs">0</h3>
+                    <p>Active Locations</p>
+                </div>
+            </div>
         </div>
-        <table id="jobTable">
-            <thead>
-                <tr>
-                    <th>Job Role</th>
-                    <th>Gender</th>
-                    <th>Salary Range</th>
-                    <th>Location</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody">
-                <!-- Data will be populated via JS -->
-            </tbody>
-        </table>
+
+        <!-- Filter Controls -->
+        <div class="controls-container">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="searchInput" placeholder="Search by Job Role..." onkeyup="filterJobs()">
+            </div>
+            <div class="filter-box">
+                <i class="fa-solid fa-filter"></i>
+                <select id="locationFilter" onchange="filterJobs()">
+                    <option value="">All Locations</option>
+                    <option value="SRAFA BAZZAR">Sraffa Bazzar</option>
+                    <option value="JALANDHAR BYPASS">Jalandhar Bypass</option>
+                    <option value="MOCHPURA BAZAR">Mochpura Bazar</option>
+                    <option value="BHADURK ROAD">Bhadurk Road</option>
+                    <option value="GHNTA GHAR">Ghnta Ghar</option>
+                    <option value="SUNDER NAGAR">Sunder Nagar</option>
+                </select>
+            </div>
+            <div class="filter-box">
+                <i class="fa-solid fa-venus-mars"></i>
+                <select id="genderFilter" onchange="filterJobs()">
+                    <option value="">All Genders</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                    <option value="BOTH">Both</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Jobs Grid Container -->
+        <div class="jobs-grid" id="jobsGrid">
+            <!-- Dynamic Cards Inserted Here -->
+        </div>
     </div>
 
     <script>
-        const jobs = [
-            {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR"},
-            {role: "SECURITY GUARD", gender: "MALE", salary: "10K-15K", loc: "SRAFA BAZZAR"},
-            {role: "CONTENT CRETAOR", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR"},
-            {role: "RECEPTION", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR"},
-            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "20K-25K", loc: "SRAFA BAZZAR"},
-            {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR"},
-            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "25K-30K", loc: "JALANDHAR BYPASS"},
-            {role: "FIELED SALES", gender: "MALE", salary: "20K-25K", loc: "JALANDHAR BYPASS"},
-            {role: "DIGITAL MARKETING", gender: "BOTH", salary: "10K-18K", loc: "JALANDHAR BYPASS"},
-            {role: "ADMIN EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "MOCHPURA BAZAR"},
-            {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "MOCHPURA BAZAR"}
+        const jobsData = [
+            {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
+            {role: "SECURITY GUARD", gender: "MALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
+            {role: "CONTENT CRETAOR", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
+            {role: "RECEPTION", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
+            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "20K-25K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
+            {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
+            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "25K-30K", loc: "JALANDHAR BYPASS", city: "LUDHIANA"},
+            {role: "FIELED SALES", gender: "MALE", salary: "20K-25K", loc: "JALANDHAR BYPASS", city: "LUDHIANA"},
+            {role: "DIGITAL MARKETING", gender: "BOTH", salary: "10K-18K", loc: "JALANDHAR BYPASS", city: "LUDHIANA"},
+            {role: "ADMIN EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "MOCHPURA BAZAR", city: "LUDHIANA"},
+            {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "MOCHPURA BAZAR", city: "LUDHIANA"},
+            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "18K-25K", loc: "BHADURK ROAD", city: "LUDHIANA"},
+            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "18K-25K", loc: "GHNTA GHAR", city: "LUDHIANA"},
+            {role: "ACCOUNT EXECUTIVE", gender: "FEMALE", salary: "10K-14K", loc: "SUNDER NAGAR", city: "LUDHIANA"}
         ];
 
-        function populateTable(data) {
-            const body = document.getElementById('tableBody');
-            body.innerHTML = '';
+        function renderJobs(data) {
+            const grid = document.getElementById('jobsGrid');
+            document.getElementById('totalJobs').innerText = data.length;
+            
+            // Calculate unique locations
+            const uniqueLocs = [...new Set(data.map(item => item.loc))];
+            document.getElementById('totalLocs').innerText = uniqueLocs.length;
+
+            if (data.length === 0) {
+                grid.innerHTML = `<div class="no-results"><i class="fa-solid fa-face-sad-tear fa-2x" style="margin-bottom:10px;"></i><br>No matching job openings found.</div>`;
+                return;
+            }
+
+            let html = '';
             data.forEach(job => {
-                body.innerHTML += `<tr><td>${job.role}</td><td>${job.gender}</td><td>${job.salary}</td><td>${job.loc}</td></tr>`;
+                let badgeClass = 'badge-both';
+                if(job.gender === 'FEMALE') badgeClass = 'badge-female';
+                if(job.gender === 'MALE') badgeClass = 'badge-male';
+
+                html += `
+                    <div class="job-card">
+                        <div>
+                            <div class="job-header">
+                                <div class="job-title">${job.role}</div>
+                                <span class="badge ${badgeClass}">${job.gender}</span>
+                            </div>
+                            <div class="job-details">
+                                <div class="job-detail-item">
+                                    <i class="fa-solid fa-indian-rupee-sign"></i>
+                                    <span>Salary: <span class="salary-highlight">${job.salary}</span></span>
+                                </div>
+                                <div class="job-detail-item">
+                                    <i class="fa-solid fa-city"></i>
+                                    <span>City: ${job.city}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="job-footer">
+                            <span class="location-tag"><i class="fa-solid fa-map-pin"></i> ${job.loc}</span>
+                            <a href="tel:+" class="apply-btn"><i class="fa-solid fa-paper-plane"></i> Apply Now</a>
+                        </div>
+                    </div>
+                `;
             });
+            grid.innerHTML = html;
         }
 
-        function filterTable() {
-            const role = document.getElementById('roleInput').value.toUpperCase();
-            const loc = document.getElementById('locationInput').value.toUpperCase();
-            const filtered = jobs.filter(j => 
-                j.role.toUpperCase().includes(role) && 
-                (loc === "" || j.loc.toUpperCase().includes(loc))
-            );
-            populateTable(filtered);
+        function filterJobs() {
+            const searchVal = document.getElementById('searchInput').value.toUpperCase();
+            const locVal = document.getElementById('locationFilter').value.toUpperCase();
+            const genderVal = document.getElementById('genderFilter').value.toUpperCase();
+
+            const filtered = jobsData.filter(job => {
+                const matchRole = job.role.toUpperCase().includes(searchVal);
+                const matchLoc = locVal === "" || job.loc.toUpperCase().includes(locVal);
+                const matchGender = genderVal === "" || job.gender.toUpperCase() === genderVal;
+                return matchRole && matchLoc && matchGender;
+            });
+
+            renderJobs(filtered);
         }
 
-        populateTable(jobs);
+        // Initial render
+        renderJobs(jobsData);
     </script>
 </body>
 </html>
 """
 
-with open("index.html", "w") as f:
-    f.write(html_content)
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(pro_html)
