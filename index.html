@@ -23,51 +23,14 @@
         .container { max-width: 1200px; margin: 0 auto; }
 
         header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
             background: var(--card-bg);
             padding: 16px 20px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
         }
         .header-title h1 { font-size: 1.5rem; color: #1e293b; font-weight: 700; }
         .header-title p { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
-        
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-
-        .btn-post {
-            background: #059669;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
-        .btn-post:hover { background: #047857; }
-
-        .btn-sheet {
-            background: #2563eb;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 0.9rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
-        .btn-sheet:hover { background: #1d4ed8; }
 
         /* View Mode Switcher */
         .view-switcher {
@@ -93,33 +56,34 @@
             color: white;
         }
 
-        /* Filter Panel */
+        /* Filter Panel - Compact single row/grid style */
         .filter-panel {
             background: var(--card-bg);
-            padding: 18px;
+            padding: 14px 18px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 15px;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 12px;
+            align-items: end;
         }
 
         .filter-group {
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 4px;
         }
         .filter-group label {
-            font-size: 0.85rem;
+            font-size: 0.78rem;
             font-weight: 600;
-            color: #334155;
+            color: #475569;
         }
         .search-input {
-            padding: 10px 12px;
+            padding: 8px 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             outline: none;
             background: #fff;
             width: 100%;
@@ -134,7 +98,7 @@
             position: relative;
         }
         .dropdown-select-btn {
-            padding: 10px 12px;
+            padding: 8px 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: #fff;
@@ -142,9 +106,12 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #334155;
             user-select: none;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         .dropdown-list {
             position: absolute;
@@ -180,7 +147,7 @@
             align-items: center;
             margin-bottom: 12px;
             padding: 0 5px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: var(--text-muted);
             font-weight: 500;
         }
@@ -292,10 +259,11 @@
             grid-column: 1 / -1;
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
+            .filter-panel { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 600px) {
             .filter-panel { grid-template-columns: 1fr; }
-            header { flex-direction: column; align-items: flex-start; }
-            .cards-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -306,14 +274,6 @@
             <div class="header-title">
                 <h1><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</h1>
                 <p>Live Google Sheets integration with category cards & table view</p>
-            </div>
-            <div class="header-actions">
-                <a href="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform" target="_blank" class="btn-post">
-                    <i class="fa-solid fa-plus-circle"></i> Post a New Job
-                </a>
-                <a href="https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/edit?usp=sharing" target="_blank" class="btn-sheet">
-                    <i class="fa-solid fa-table"></i> Open Sheet
-                </a>
             </div>
         </header>
 
@@ -327,15 +287,15 @@
             </button>
         </div>
 
-        <!-- Filter Panel -->
+        <!-- Filter Panel (Compact & Single-row optimized) -->
         <div class="filter-panel">
             <div class="filter-group">
-                <label><i class="fa-solid fa-magnifying-glass"></i> Search Job Role</label>
+                <label><i class="fa-solid fa-magnifying-glass"></i> Search Role</label>
                 <input type="text" id="searchInput" class="search-input" placeholder="Type role name..." onkeyup="filterData()">
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-location-dot"></i> Locations (Multi-select)</label>
+                <label><i class="fa-solid fa-location-dot"></i> Locations</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('locDropdown')">
                         <span id="locLabel">All Locations</span>
@@ -346,7 +306,7 @@
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-indian-rupee-sign"></i> Salary Range (Multi-select)</label>
+                <label><i class="fa-solid fa-indian-rupee-sign"></i> Salary Range</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('salDropdown')">
                         <span id="salLabel">All Salaries</span>
@@ -357,7 +317,7 @@
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-venus-mars"></i> Gender (Multi-select)</label>
+                <label><i class="fa-solid fa-venus-mars"></i> Gender</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('genDropdown')">
                         <span id="genLabel">All Genders</span>
@@ -575,7 +535,6 @@
                 return;
             }
 
-            // Group jobs by Role / Category
             let grouped = {};
             data.forEach(job => {
                 if(!grouped[job.role]) grouped[job.role] = [];
