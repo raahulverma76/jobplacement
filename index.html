@@ -37,6 +37,8 @@
         .header-title h1 { font-size: 1.5rem; color: #1e293b; font-weight: 700; }
         .header-title p { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
         
+        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
         .btn-post {
             background: #059669;
             color: white;
@@ -51,6 +53,45 @@
             transition: background 0.2s;
         }
         .btn-post:hover { background: #047857; }
+
+        .btn-sheet {
+            background: #2563eb;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-sheet:hover { background: #1d4ed8; }
+
+        /* View Mode Switcher */
+        .view-switcher {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .switch-btn {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .switch-btn.active {
+            background: var(--primary);
+            color: white;
+        }
 
         /* Filter Panel */
         .filter-panel {
@@ -144,12 +185,70 @@
             font-weight: 500;
         }
 
+        /* Category Cards Grid View */
+        .cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        .category-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 18px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border-left: 5px solid var(--primary);
+        }
+        .category-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .category-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .category-count-badge {
+            background: #dbeafe;
+            color: #1d4ed8;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        .category-details {
+            display: none;
+            margin-top: 12px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 10px;
+        }
+        .category-card.open .category-details {
+            display: block;
+        }
+        .job-sub-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px dashed #f1f5f9;
+            font-size: 0.85rem;
+        }
+        .job-sub-item:last-child { border-bottom: none; }
+
         /* Line / Compact Table View */
         .table-wrapper {
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             overflow-x: auto;
+            display: none;
         }
         .data-table {
             width: 100%;
@@ -190,37 +289,51 @@
             padding: 30px;
             color: var(--text-muted);
             font-size: 0.95rem;
+            grid-column: 1 / -1;
         }
 
         @media (max-width: 768px) {
             .filter-panel { grid-template-columns: 1fr; }
             header { flex-direction: column; align-items: flex-start; }
+            .cards-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <!-- Header with Google Sheet Link -->
+        <!-- Header -->
         <header>
             <div class="header-title">
                 <h1><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</h1>
-                <p>Live Google Sheets integration with multi-select filters</p>
+                <p>Live Google Sheets integration with category cards & table view</p>
             </div>
-            <!-- Updated direct Google Sheet link -->
-            <a href="https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/edit?usp=sharing" target="_blank" class="btn-post">
-                <i class="fa-solid fa-plus-circle"></i> View / Edit Sheet
-            </a>
+            <div class="header-actions">
+                <a href="https://docs.google.com/forms/d/e/YOUR_FORM_ID/viewform" target="_blank" class="btn-post">
+                    <i class="fa-solid fa-plus-circle"></i> Post a New Job
+                </a>
+                <a href="https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/edit?usp=sharing" target="_blank" class="btn-sheet">
+                    <i class="fa-solid fa-table"></i> Open Sheet
+                </a>
+            </div>
         </header>
+
+        <!-- View Switcher -->
+        <div class="view-switcher">
+            <button id="cardViewBtn" class="switch-btn active" onclick="switchView('cards')">
+                <i class="fa-solid fa-grip"></i> Category Cards View
+            </button>
+            <button id="tableViewBtn" class="switch-btn" onclick="switchView('table')">
+                <i class="fa-solid fa-list"></i> Full Table View
+            </button>
+        </div>
 
         <!-- Filter Panel -->
         <div class="filter-panel">
-            <!-- Search Filter -->
             <div class="filter-group">
                 <label><i class="fa-solid fa-magnifying-glass"></i> Search Job Role</label>
                 <input type="text" id="searchInput" class="search-input" placeholder="Type role name..." onkeyup="filterData()">
             </div>
 
-            <!-- Multi-Select Location -->
             <div class="filter-group">
                 <label><i class="fa-solid fa-location-dot"></i> Locations (Multi-select)</label>
                 <div class="dropdown-container">
@@ -232,7 +345,6 @@
                 </div>
             </div>
 
-            <!-- Multi-Select Salary -->
             <div class="filter-group">
                 <label><i class="fa-solid fa-indian-rupee-sign"></i> Salary Range (Multi-select)</label>
                 <div class="dropdown-container">
@@ -244,7 +356,6 @@
                 </div>
             </div>
 
-            <!-- Multi-Select Gender -->
             <div class="filter-group">
                 <label><i class="fa-solid fa-venus-mars"></i> Gender (Multi-select)</label>
                 <div class="dropdown-container">
@@ -262,8 +373,13 @@
             <button onclick="resetFilters()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-rotate-right"></i> Reset Filters</button>
         </div>
 
+        <!-- Cards Container (Mobile Friendly View) -->
+        <div id="cardsContainer" class="cards-container">
+            <!-- Populated dynamically -->
+        </div>
+
         <!-- Line / Table View -->
-        <div class="table-wrapper">
+        <div class="table-wrapper" id="tableWrapper">
             <table class="data-table">
                 <thead>
                     <tr>
@@ -274,9 +390,7 @@
                         <th>City</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody">
-                    <!-- Rows populated dynamically -->
-                </tbody>
+                <tbody id="tableBody"></tbody>
             </table>
         </div>
     </div>
@@ -305,6 +419,7 @@
         let locations = [];
         let salaries = [];
         let genders = [];
+        let currentView = 'cards';
 
         async function initApp() {
             try {
@@ -320,7 +435,7 @@
 
             extractFilterOptions();
             initDropdowns();
-            renderTable(jobsData);
+            renderView(jobsData);
         }
 
         function parseCSV(text) {
@@ -407,6 +522,17 @@
             }
         }
 
+        function switchView(viewType) {
+            currentView = viewType;
+            document.getElementById('cardViewBtn').classList.toggle('active', viewType === 'cards');
+            document.getElementById('tableViewBtn').classList.toggle('active', viewType === 'table');
+            
+            document.getElementById('cardsContainer').style.display = viewType === 'cards' ? 'grid' : 'none';
+            document.getElementById('tableWrapper').style.display = viewType === 'table' ? 'block' : 'none';
+            
+            filterData();
+        }
+
         function filterData() {
             updateLabels();
             const searchVal = document.getElementById('searchInput').value.toUpperCase();
@@ -423,20 +549,77 @@
                 return matchSearch && matchLoc && matchSal && matchGen;
             });
 
-            renderTable(filtered);
+            renderView(filtered);
         }
 
         function resetFilters() {
             document.getElementById('searchInput').value = '';
             document.querySelectorAll('.dropdown-list input[type="checkbox"]').forEach(cb => cb.checked = false);
             updateLabels();
-            renderTable(jobsData);
+            renderView(jobsData);
+        }
+
+        function renderView(data) {
+            document.getElementById('resultCount').innerText = `Showing ${data.length} job(s)`;
+            if (currentView === 'cards') {
+                renderCards(data);
+            } else {
+                renderTable(data);
+            }
+        }
+
+        function renderCards(data) {
+            const container = document.getElementById('cardsContainer');
+            if(data.length === 0) {
+                container.innerHTML = `<div class="no-data"><i class="fa-solid fa-circle-exclamation"></i> No job postings match your selected filters.</div>`;
+                return;
+            }
+
+            // Group jobs by Role / Category
+            let grouped = {};
+            data.forEach(job => {
+                if(!grouped[job.role]) grouped[job.role] = [];
+                grouped[job.role].push(job);
+            });
+
+            let html = '';
+            for(let role in grouped) {
+                let items = grouped[role];
+                let subItemsHtml = '';
+                items.forEach(job => {
+                    let badgeClass = 'badge-both';
+                    if(job.gender === 'FEMALE') badgeClass = 'badge-female';
+                    if(job.gender === 'MALE') badgeClass = 'badge-male';
+
+                    subItemsHtml += `
+                        <div class="job-sub-item">
+                            <span><i class="fa-solid fa-location-dot" style="color:var(--text-muted)"></i> ${job.loc}, ${job.city}</span>
+                            <div>
+                                <span class="badge ${badgeClass}">${job.gender}</span>
+                                <span class="salary-text">${job.salary}</span>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="category-card" onclick="this.classList.toggle('open')">
+                        <div class="category-header">
+                            <span class="category-title"><i class="fa-solid fa-briefcase" style="color:var(--primary); margin-right:6px;"></i> ${role}</span>
+                            <span class="category-count-badge">${items.length} Opening(s)</span>
+                        </div>
+                        <p style="font-size:0.8rem; color:var(--text-muted);"><i class="fa-solid fa-chevron-down"></i> Click to view locations & details</p>
+                        <div class="category-details">
+                            ${subItemsHtml}
+                        </div>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
         }
 
         function renderTable(data) {
             const tbody = document.getElementById('tableBody');
-            document.getElementById('resultCount').innerText = `Showing ${data.length} job(s)`;
-
             if(data.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="5" class="no-data"><i class="fa-solid fa-circle-exclamation"></i> No job postings match your selected filters.</td></tr>`;
                 return;
