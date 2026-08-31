@@ -6,7 +6,6 @@
     <title>Professional Job Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2canvas library for HTML to Image conversion -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
@@ -31,8 +30,37 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 15px;
         }
-        .header-title h1 { font-size: 1.4rem; color: #1e293b; font-weight: 700; }
+        .header-title-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .header-title h1 { 
+            font-size: 1.4rem; 
+            color: #1e293b; 
+            font-weight: 700; 
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
         .header-title p { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
+
+        .total-jobs-badge {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
 
         /* View Mode Switcher */
         .view-switcher {
@@ -356,7 +384,7 @@
         @media (max-width: 600px) {
             body { padding: 8px; }
             header { padding: 12px; }
-            .header-title h1 { font-size: 1.2rem; }
+            .header-title h1 { font-size: 1.1rem; }
             .switch-btn { padding: 8px 10px; font-size: 0.8rem; }
             .filter-panel { grid-template-columns: 1fr; gap: 10px; }
             .status-card-box { padding: 8px; }
@@ -366,15 +394,18 @@
 </head>
 <body>
     <div class="container">
-        <!-- Header -->
         <header>
-            <div class="header-title">
-                <h1><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</h1>
-                <p>Live Google Sheets integration with category cards, table & status generator</p>
+            <div class="header-title-wrapper">
+                <div class="header-title">
+                    <h1>
+                        <span><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</span>
+                        <span class="total-jobs-badge"><i class="fa-solid fa-layer-group"></i> <span id="topTotalJobsCount">0</span> Available Jobs</span>
+                    </h1>
+                    <p> </p>
+                </div>
             </div>
         </header>
 
-        <!-- View Switcher -->
         <div class="view-switcher">
             <button id="cardViewBtn" class="switch-btn active" onclick="switchView('cards')">
                 <i class="fa-solid fa-grip"></i> Category Cards
@@ -387,7 +418,6 @@
             </button>
         </div>
 
-        <!-- Filter Panel -->
         <div class="filter-panel">
             <div class="filter-group">
                 <label><i class="fa-solid fa-magnifying-glass"></i> Search Role</label>
@@ -433,10 +463,8 @@
             <button onclick="resetFilters()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-rotate-right"></i> Reset Filters</button>
         </div>
 
-        <!-- Cards Container -->
         <div id="cardsContainer" class="cards-container"></div>
 
-        <!-- Line / Table View -->
         <div class="table-wrapper" id="tableWrapper">
             <table class="data-table">
                 <thead>
@@ -452,7 +480,6 @@
             </table>
         </div>
 
-        <!-- Status Image Generator View -->
         <div class="status-generator-wrapper" id="statusWrapper">
             <div class="status-actions">
                 <button class="btn-action btn-download" onclick="downloadStatusImage()">
@@ -463,7 +490,6 @@
                 </button>
             </div>
 
-            <!-- Preview Card Element for Screenshot -->
             <div id="statusGraphicCard" class="status-card-box">
                 <div class="status-header-banner">
                     **WWW.ABCWALE.COM**
@@ -650,6 +676,7 @@
         }
 
         function renderView(data) {
+            document.getElementById('topTotalJobsCount').innerText = data.length;
             document.getElementById('resultCount').innerText = `Showing ${data.length} job(s)`;
             if (currentView === 'cards') {
                 renderCards(data);
