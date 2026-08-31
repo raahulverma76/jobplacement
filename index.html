@@ -4,8 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Professional Job Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2canvas library for HTML to Image conversion -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
             --primary: #2563eb;
@@ -18,31 +20,32 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-        body { background: var(--bg-color); color: var(--text-main); padding: 15px; }
+        body { background: var(--bg-color); color: var(--text-main); padding: 12px; }
 
-        .container { max-width: 1200px; margin: 0 auto; }
+        .container { max-width: 1200px; margin: 0 auto; width: 100%; }
 
         header {
             background: var(--card-bg);
             padding: 16px 20px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
-        .header-title h1 { font-size: 1.5rem; color: #1e293b; font-weight: 700; }
+        .header-title h1 { font-size: 1.4rem; color: #1e293b; font-weight: 700; }
         .header-title p { color: var(--text-muted); font-size: 0.85rem; margin-top: 2px; }
 
         /* View Mode Switcher */
         .view-switcher {
             display: flex;
-            gap: 10px;
+            gap: 8px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
         .switch-btn {
             background: #e2e8f0;
             color: #334155;
             border: none;
-            padding: 8px 16px;
+            padding: 10px 14px;
             border-radius: 8px;
             font-weight: 600;
             font-size: 0.85rem;
@@ -50,21 +53,24 @@
             display: flex;
             align-items: center;
             gap: 6px;
+            flex: 1;
+            justify-content: center;
+            min-width: 140px;
         }
         .switch-btn.active {
             background: var(--primary);
             color: white;
         }
 
-        /* Filter Panel - Compact single row/grid style */
+        /* Filter Panel */
         .filter-panel {
             background: var(--card-bg);
-            padding: 14px 18px;
+            padding: 14px;
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             margin-bottom: 15px;
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
             align-items: end;
         }
@@ -80,7 +86,7 @@
             color: #475569;
         }
         .search-input {
-            padding: 8px 12px;
+            padding: 9px 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
             font-size: 0.85rem;
@@ -93,12 +99,12 @@
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
         }
 
-        /* Multi-select dropdown custom container styling */
+        /* Multi-select dropdown */
         .dropdown-container {
             position: relative;
         }
         .dropdown-select-btn {
-            padding: 8px 12px;
+            padding: 9px 12px;
             border: 1px solid var(--border);
             border-radius: 8px;
             background: #fff;
@@ -122,7 +128,7 @@
             border-radius: 8px;
             margin-top: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            max-height: 180px;
+            max-height: 200px;
             overflow-y: auto;
             display: none;
             z-index: 100;
@@ -146,7 +152,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 12px;
-            padding: 0 5px;
+            padding: 0 4px;
             font-size: 0.85rem;
             color: var(--text-muted);
             font-weight: 500;
@@ -156,45 +162,45 @@
         .cards-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 15px;
+            gap: 12px;
         }
         .category-card {
             background: var(--card-bg);
             border-radius: 12px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            padding: 18px;
+            padding: 16px;
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
             border-left: 5px solid var(--primary);
         }
         .category-card:hover {
-            transform: translateY(-3px);
+            transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         .category-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .category-title {
-            font-size: 1.05rem;
+            font-size: 1rem;
             font-weight: 700;
             color: #1e293b;
         }
         .category-count-badge {
             background: #dbeafe;
             color: #1d4ed8;
-            padding: 4px 10px;
+            padding: 3px 8px;
             border-radius: 20px;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             font-weight: 700;
         }
         .category-details {
             display: none;
-            margin-top: 12px;
+            margin-top: 10px;
             border-top: 1px solid #e2e8f0;
-            padding-top: 10px;
+            padding-top: 8px;
         }
         .category-card.open .category-details {
             display: block;
@@ -205,7 +211,8 @@
             align-items: center;
             padding: 6px 0;
             border-bottom: 1px dashed #f1f5f9;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
+            gap: 8px;
         }
         .job-sub-item:last-child { border-bottom: none; }
 
@@ -216,22 +223,23 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             overflow-x: auto;
             display: none;
+            width: 100%;
         }
         .data-table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.9rem;
-            min-width: 650px;
+            font-size: 0.85rem;
+            min-width: 600px;
         }
         .data-table th {
             background: #1e293b;
             color: #ffffff;
-            padding: 12px 16px;
+            padding: 10px 12px;
             font-weight: 600;
         }
         .data-table td {
-            padding: 12px 16px;
+            padding: 10px 12px;
             border-bottom: 1px solid #e2e8f0;
             color: #334155;
         }
@@ -241,15 +249,16 @@
         .badge {
             padding: 3px 8px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
             font-weight: 600;
             text-transform: uppercase;
+            white-space: nowrap;
         }
         .badge-female { background: #fce7f3; color: #db2777; }
         .badge-male { background: #e0f2fe; color: #0284c7; }
         .badge-both { background: #f3e8ff; color: #9333ea; }
         
-        .salary-text { font-weight: 600; color: #059669; }
+        .salary-text { font-weight: 600; color: #059669; white-space: nowrap; }
 
         .no-data {
             text-align: center;
@@ -259,11 +268,99 @@
             grid-column: 1 / -1;
         }
 
-        @media (max-width: 900px) {
-            .filter-panel { grid-template-columns: 1fr 1fr; }
+        /* STATUS GENERATOR WRAPPER */
+        .status-generator-wrapper {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            width: 100%;
+            overflow-x: auto;
         }
+        .status-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .btn-action {
+            padding: 10px 16px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 160px;
+        }
+        .btn-download { background: #059669; color: white; }
+        .btn-whatsapp { background: #25D366; color: white; }
+        
+        /* FULLY RESPONSIVE & COMPLETE STATUS CARD TEMPLATE */
+        .status-card-box {
+            background: #fffde7;
+            padding: 12px;
+            border: 2px solid #000;
+            width: 100%;
+            max-width: 650px;
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+        .status-header-banner {
+            text-align: center;
+            color: #d32f2f;
+            font-size: clamp(1.1rem, 4vw, 1.6rem);
+            font-weight: 900;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            word-break: break-word;
+        }
+        .status-table-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+        .status-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border: 2px solid #333;
+        }
+        .status-table td {
+            border: 1px solid #777;
+            padding: 6px 8px;
+            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+            font-weight: 700;
+            color: #000;
+            text-transform: uppercase;
+            word-break: break-word;
+        }
+        .status-footer-banner {
+            margin-top: 8px;
+            text-align: center;
+            border: 2px solid #333;
+            background: #fff;
+            padding: 8px;
+            font-size: clamp(0.75rem, 2.8vw, 0.95rem);
+            font-weight: 900;
+            color: #d32f2f;
+            word-break: break-word;
+        }
+
+        /* MOBILE ADJUSTMENTS */
         @media (max-width: 600px) {
-            .filter-panel { grid-template-columns: 1fr; }
+            body { padding: 8px; }
+            header { padding: 12px; }
+            .header-title h1 { font-size: 1.2rem; }
+            .switch-btn { padding: 8px 10px; font-size: 0.8rem; }
+            .filter-panel { grid-template-columns: 1fr; gap: 10px; }
+            .status-card-box { padding: 8px; }
+            .status-table td { padding: 5px 4px; }
         }
     </style>
 </head>
@@ -273,21 +370,24 @@
         <header>
             <div class="header-title">
                 <h1><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</h1>
-                <p>Live Google Sheets integration with category cards & table view</p>
+                <p>Live Google Sheets integration with category cards, table & status generator</p>
             </div>
         </header>
 
         <!-- View Switcher -->
         <div class="view-switcher">
             <button id="cardViewBtn" class="switch-btn active" onclick="switchView('cards')">
-                <i class="fa-solid fa-grip"></i> Category Cards View
+                <i class="fa-solid fa-grip"></i> Category Cards
             </button>
             <button id="tableViewBtn" class="switch-btn" onclick="switchView('table')">
-                <i class="fa-solid fa-list"></i> Full Table View
+                <i class="fa-solid fa-list"></i> Full Table
+            </button>
+            <button id="statusViewBtn" class="switch-btn" onclick="switchView('status')">
+                <i class="fa-solid fa-image"></i> Status Generator
             </button>
         </div>
 
-        <!-- Filter Panel (Compact & Single-row optimized) -->
+        <!-- Filter Panel -->
         <div class="filter-panel">
             <div class="filter-group">
                 <label><i class="fa-solid fa-magnifying-glass"></i> Search Role</label>
@@ -333,10 +433,8 @@
             <button onclick="resetFilters()" style="background:none; border:none; color:var(--primary); cursor:pointer; font-weight:600; font-size:0.85rem;"><i class="fa-solid fa-rotate-right"></i> Reset Filters</button>
         </div>
 
-        <!-- Cards Container (Mobile Friendly View) -->
-        <div id="cardsContainer" class="cards-container">
-            <!-- Populated dynamically -->
-        </div>
+        <!-- Cards Container -->
+        <div id="cardsContainer" class="cards-container"></div>
 
         <!-- Line / Table View -->
         <div class="table-wrapper" id="tableWrapper">
@@ -352,6 +450,33 @@
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
+        </div>
+
+        <!-- Status Image Generator View -->
+        <div class="status-generator-wrapper" id="statusWrapper">
+            <div class="status-actions">
+                <button class="btn-action btn-download" onclick="downloadStatusImage()">
+                    <i class="fa-solid fa-download"></i> Download Image
+                </button>
+                <button class="btn-action btn-whatsapp" onclick="shareToWhatsApp()">
+                    <i class="fa-brands fa-whatsapp"></i> Share to WhatsApp
+                </button>
+            </div>
+
+            <!-- Preview Card Element for Screenshot -->
+            <div id="statusGraphicCard" class="status-card-box">
+                <div class="status-header-banner">
+                    **WWW.ABCWALE.COM**
+                </div>
+                <div class="status-table-container">
+                    <table class="status-table">
+                        <tbody id="statusTableBody"></tbody>
+                    </table>
+                </div>
+                <div class="status-footer-banner">
+                    ******1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250-******
+                </div>
+            </div>
         </div>
     </div>
 
@@ -376,6 +501,7 @@
         ];
 
         let jobsData = [];
+        let filteredJobs = [];
         let locations = [];
         let salaries = [];
         let genders = [];
@@ -393,6 +519,7 @@
                 jobsData = fallbackData;
             }
 
+            filteredJobs = [...jobsData];
             extractFilterOptions();
             initDropdowns();
             renderView(jobsData);
@@ -486,9 +613,11 @@
             currentView = viewType;
             document.getElementById('cardViewBtn').classList.toggle('active', viewType === 'cards');
             document.getElementById('tableViewBtn').classList.toggle('active', viewType === 'table');
+            document.getElementById('statusViewBtn').classList.toggle('active', viewType === 'status');
             
             document.getElementById('cardsContainer').style.display = viewType === 'cards' ? 'grid' : 'none';
             document.getElementById('tableWrapper').style.display = viewType === 'table' ? 'block' : 'none';
+            document.getElementById('statusWrapper').style.display = viewType === 'status' ? 'block' : 'none';
             
             filterData();
         }
@@ -500,7 +629,7 @@
             const selectedSals = getSelectedValues('salDropdown');
             const selectedGens = getSelectedValues('genDropdown');
 
-            const filtered = jobsData.filter(job => {
+            filteredJobs = jobsData.filter(job => {
                 const matchSearch = job.role.toUpperCase().includes(searchVal);
                 const matchLoc = selectedLocs.length === 0 || selectedLocs.includes(job.loc);
                 const matchSal = selectedSals.length === 0 || selectedSals.includes(job.salary);
@@ -509,13 +638,14 @@
                 return matchSearch && matchLoc && matchSal && matchGen;
             });
 
-            renderView(filtered);
+            renderView(filteredJobs);
         }
 
         function resetFilters() {
             document.getElementById('searchInput').value = '';
             document.querySelectorAll('.dropdown-list input[type="checkbox"]').forEach(cb => cb.checked = false);
             updateLabels();
+            filteredJobs = [...jobsData];
             renderView(jobsData);
         }
 
@@ -523,8 +653,10 @@
             document.getElementById('resultCount').innerText = `Showing ${data.length} job(s)`;
             if (currentView === 'cards') {
                 renderCards(data);
-            } else {
+            } else if (currentView === 'table') {
                 renderTable(data);
+            } else {
+                renderStatusTable(data);
             }
         }
 
@@ -601,6 +733,52 @@
                 `;
             });
             tbody.innerHTML = html;
+        }
+
+        /* FULL CATEGORIES/JOBS LISTING STATUS RENDERER */
+        function renderStatusTable(data) {
+            const tbody = document.getElementById('statusTableBody');
+            if(data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px;">No jobs match selected filters</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            data.forEach(job => {
+                html += `
+                    <tr>
+                        <td>${job.role}</td>
+                        <td>${job.gender}</td>
+                        <td>${job.salary}</td>
+                        <td>${job.loc}</td>
+                        <td>${job.city}</td>
+                    </tr>
+                `;
+            });
+            tbody.innerHTML = html;
+        }
+
+        /* DOWNLOAD STATUS IMAGE WITH ALL CATEGORIES */
+        function downloadStatusImage() {
+            const element = document.getElementById('statusGraphicCard');
+            html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'job-openings-status.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+
+        /* SHARE TO WHATSAPP */
+        function shareToWhatsApp() {
+            let message = "*WWW.ABCWALE.COM*\n\n*Latest Job Openings:*\n";
+            filteredJobs.forEach(j => {
+                message += `• *${j.role}* | ${j.gender} | ${j.salary} | ${j.loc}\n`;
+            });
+            message += "\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250*";
+            
+            const encodedUrl = encodeURIComponent(message);
+            window.open(`https://api.whatsapp.com/send?text=${encodedUrl}`, '_blank');
         }
 
         initApp();
