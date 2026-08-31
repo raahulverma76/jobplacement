@@ -296,7 +296,7 @@
             grid-column: 1 / -1;
         }
 
-        /* STATUS GENERATOR WRAPPER */
+        /* STATUS GENERATOR WRAPPER - ULTRA CLEAN & PROFESSIONAL */
         .status-generator-wrapper {
             display: none;
             background: var(--card-bg);
@@ -304,7 +304,6 @@
             padding: 15px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             width: 100%;
-            overflow-x: auto;
         }
         .status-actions {
             display: flex;
@@ -313,11 +312,11 @@
             flex-wrap: wrap;
         }
         .btn-action {
-            padding: 10px 16px;
+            padding: 11px 18px;
             border-radius: 8px;
             border: none;
             font-weight: 700;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             cursor: pointer;
             display: flex;
             align-items: center;
@@ -329,55 +328,92 @@
         .btn-download { background: #059669; color: white; }
         .btn-whatsapp { background: #25D366; color: white; }
         
-        /* FULLY RESPONSIVE & COMPLETE STATUS CARD TEMPLATE */
+        .status-scroll-container {
+            width: 100%;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        /* PERFECT HIGH RESOLUTION STATUS BANNER DISPLAY */
         .status-card-box {
             background: #fffde7;
-            padding: 12px;
+            padding: 14px;
             border: 2px solid #000;
-            width: 100%;
-            max-width: 650px;
+            width: 600px; /* Fixed rendering width to prevent mobile text overlapping */
             margin: 0 auto;
             box-sizing: border-box;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
         }
+
         .status-header-banner {
             text-align: center;
             color: #d32f2f;
-            font-size: clamp(1.1rem, 4vw, 1.6rem);
+            font-size: 1.4rem;
             font-weight: 900;
             letter-spacing: 0.5px;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             text-transform: uppercase;
-            word-break: break-word;
+            line-height: 1.2;
         }
+
         .status-table-container {
             width: 100%;
-            overflow-x: auto;
         }
+
         .status-table {
             width: 100%;
             border-collapse: collapse;
             background: #fff;
-            border: 2px solid #333;
+            border: 2px solid #000;
+            table-layout: fixed; /* Prevents text overflow & column squishing */
         }
-        .status-table td {
-            border: 1px solid #777;
+
+        .status-table th {
+            background: #d32f2f;
+            color: #ffffff;
+            border: 1px solid #000;
             padding: 6px 8px;
-            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+            font-size: 0.78rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            text-align: center;
+        }
+
+        .status-table td {
+            border: 1px solid #444;
+            padding: 7px 8px;
+            font-size: 0.78rem;
             font-weight: 700;
             color: #000;
             text-transform: uppercase;
-            word-break: break-word;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal; /* Ensures wrap without overlap */
+            line-height: 1.25;
+            vertical-align: middle;
         }
+
+        /* Explicit Column Widths for Perfect Proportional Alignment */
+        .status-table th:nth-child(1), .status-table td:nth-child(1) { width: 30%; }
+        .status-table th:nth-child(2), .status-table td:nth-child(2) { width: 14%; text-align: center; }
+        .status-table th:nth-child(3), .status-table td:nth-child(3) { width: 18%; text-align: center; }
+        .status-table th:nth-child(4), .status-table td:nth-child(4) { width: 22%; }
+        .status-table th:nth-child(5), .status-table td:nth-child(5) { width: 16%; text-align: center; }
+
+        .status-table tr:nth-child(even) {
+            background: #fdfbf0;
+        }
+
         .status-footer-banner {
-            margin-top: 8px;
+            margin-top: 10px;
             text-align: center;
-            border: 2px solid #333;
+            border: 2px solid #000;
             background: #fff;
-            padding: 8px;
-            font-size: clamp(0.75rem, 2.8vw, 0.95rem);
+            padding: 8px 10px;
+            font-size: 0.85rem;
             font-weight: 900;
             color: #d32f2f;
-            word-break: break-word;
+            line-height: 1.3;
         }
 
         /* MOBILE ADJUSTMENTS */
@@ -387,8 +423,6 @@
             .header-title h1 { font-size: 1.1rem; }
             .switch-btn { padding: 8px 10px; font-size: 0.8rem; }
             .filter-panel { grid-template-columns: 1fr; gap: 10px; }
-            .status-card-box { padding: 8px; }
-            .status-table td { padding: 5px 4px; }
         }
     </style>
 </head>
@@ -401,7 +435,7 @@
                         <span><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</span>
                         <span class="total-jobs-badge"><i class="fa-solid fa-layer-group"></i> <span id="topTotalJobsCount">0</span> Available Jobs</span>
                     </h1>
-                    <p> </p>
+                    <p>Live Google Sheets integration with category cards, table & status generator</p>
                 </div>
             </div>
         </header>
@@ -490,17 +524,28 @@
                 </button>
             </div>
 
-            <div id="statusGraphicCard" class="status-card-box">
-                <div class="status-header-banner">
-                    **WWW.ABCWALE.COM**
-                </div>
-                <div class="status-table-container">
-                    <table class="status-table">
-                        <tbody id="statusTableBody"></tbody>
-                    </table>
-                </div>
-                <div class="status-footer-banner">
-                    ******1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250-******
+            <div class="status-scroll-container">
+                <div id="statusGraphicCard" class="status-card-box">
+                    <div class="status-header-banner">
+                        WWW.ABCWALE.COM
+                    </div>
+                    <div class="status-table-container">
+                        <table class="status-table">
+                            <thead>
+                                <tr>
+                                    <th>JOB ROLE</th>
+                                    <th>GENDER</th>
+                                    <th>SALARY</th>
+                                    <th>LOCATION</th>
+                                    <th>CITY</th>
+                                </tr>
+                            </thead>
+                            <tbody id="statusTableBody"></tbody>
+                        </table>
+                    </div>
+                    <div class="status-footer-banner">
+                        1 YEAR ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250 ONLY
+                    </div>
                 </div>
             </div>
         </div>
@@ -775,23 +820,29 @@
                 html += `
                     <tr>
                         <td>${job.role}</td>
-                        <td>${job.gender}</td>
-                        <td>${job.salary}</td>
+                        <td style="text-align:center;">${job.gender}</td>
+                        <td style="text-align:center;">${job.salary}</td>
                         <td>${job.loc}</td>
-                        <td>${job.city}</td>
+                        <td style="text-align:center;">${job.city}</td>
                     </tr>
                 `;
             });
             tbody.innerHTML = html;
         }
 
-        /* DOWNLOAD STATUS IMAGE WITH ALL CATEGORIES */
+        /* DOWNLOAD STATUS IMAGE WITH ULTRA SHARP RESOLUTION */
         function downloadStatusImage() {
             const element = document.getElementById('statusGraphicCard');
-            html2canvas(element, { scale: 2, useCORS: true }).then(canvas => {
+            html2canvas(element, { 
+                scale: 3, 
+                useCORS: true,
+                allowTaint: true,
+                scrollX: 0,
+                scrollY: 0
+            }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'job-openings-status.png';
-                link.href = canvas.toDataURL('image/png');
+                link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
             });
         }
@@ -802,7 +853,7 @@
             filteredJobs.forEach(j => {
                 message += `• *${j.role}* | ${j.gender} | ${j.salary} | ${j.loc}\n`;
             });
-            message += "\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250*";
+            message += "\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250 ONLY*";
             
             const encodedUrl = encodeURIComponent(message);
             window.open(`https://api.whatsapp.com/send?text=${encodedUrl}`, '_blank');
