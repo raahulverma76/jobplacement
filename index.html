@@ -296,7 +296,7 @@
             grid-column: 1 / -1;
         }
 
-        /* STATUS GENERATOR WRAPPER - ULTRA CLEAN & PROFESSIONAL */
+        /* STATUS GENERATOR WRAPPER */
         .status-generator-wrapper {
             display: none;
             background: var(--card-bg);
@@ -334,12 +334,11 @@
             padding-bottom: 8px;
         }
 
-        /* PERFECT HIGH RESOLUTION STATUS BANNER DISPLAY */
         .status-card-box {
             background: #fffde7;
             padding: 14px;
             border: 2px solid #000;
-            width: 600px; /* Fixed rendering width to prevent mobile text overlapping */
+            width: 600px;
             margin: 0 auto;
             box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
@@ -365,7 +364,7 @@
             border-collapse: collapse;
             background: #fff;
             border: 2px solid #000;
-            table-layout: fixed; /* Prevents text overflow & column squishing */
+            table-layout: fixed;
         }
 
         .status-table th {
@@ -388,21 +387,18 @@
             text-transform: uppercase;
             word-wrap: break-word;
             overflow-wrap: break-word;
-            white-space: normal; /* Ensures wrap without overlap */
+            white-space: normal;
             line-height: 1.25;
             vertical-align: middle;
         }
 
-        /* Explicit Column Widths for Perfect Proportional Alignment */
         .status-table th:nth-child(1), .status-table td:nth-child(1) { width: 30%; }
         .status-table th:nth-child(2), .status-table td:nth-child(2) { width: 14%; text-align: center; }
         .status-table th:nth-child(3), .status-table td:nth-child(3) { width: 18%; text-align: center; }
         .status-table th:nth-child(4), .status-table td:nth-child(4) { width: 22%; }
         .status-table th:nth-child(5), .status-table td:nth-child(5) { width: 16%; text-align: center; }
 
-        .status-table tr:nth-child(even) {
-            background: #fdfbf0;
-        }
+        .status-table tr:nth-child(even) { background: #fdfbf0; }
 
         .status-footer-banner {
             margin-top: 10px;
@@ -561,7 +557,6 @@
             gap: 10px;
         }
 
-        /* MOBILE ADJUSTMENTS */
         @media (max-width: 600px) {
             body { padding: 8px; }
             header { padding: 12px; }
@@ -572,7 +567,6 @@
     </style>
 </head>
 <body>
-    <!-- PASSWORD MODAL FOR CANDIDATE DISPATCH SCREEN -->
     <div id="passwordModal" class="password-modal-overlay" style="display: none;">
         <div class="password-box">
             <h3><i class="fa-solid fa-lock" style="color:var(--primary);"></i> Secure Access</h3>
@@ -710,88 +704,81 @@
             </div>
         </div>
 
-        <!-- NEW PASSWORD PROTECTED CANDIDATE DISPATCH SCREEN -->
+        <!-- CANDIDATE DISPATCH SCREEN (MAPPED TO "MAIN SHEET") -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="font-size: 1.1rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch Management (Smart Substring Matching)</h3>
+                <h3 style="font-size: 1.1rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet (Current & Applied Profile Matching)</h3>
                 <button onclick="switchView('cards')" style="background: #e2e8f0; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
             
             <div class="dispatch-controls">
                 <div class="filter-group">
-                    <label><i class="fa-solid fa-id-card"></i> Filter Candidate by Profile</label>
+                    <label><i class="fa-solid fa-id-card"></i> Filter Profile Column (Current / Applied)</label>
                     <select id="dispatchProfileFilter" class="search-input" onchange="renderDispatchCandidates()">
                         <option value="ALL">All Profiles / Categories</option>
                     </select>
                 </div>
                 <div class="filter-group">
-                    <label><i class="fa-solid fa-magnifying-glass"></i> Search Candidate Name/Number</label>
+                    <label><i class="fa-solid fa-magnifying-glass"></i> Search Name / Phone / Profile</label>
                     <input type="text" id="dispatchSearchInput" class="search-input" placeholder="Search candidate..." onkeyup="renderDispatchCandidates()">
                 </div>
             </div>
 
             <div class="dispatch-split-view">
-                <!-- Left Side: Supervisor Jobs Filter / Selection -->
                 <div class="dispatch-panel-box">
                     <div class="dispatch-panel-header">
-                        <span><i class="fa-solid fa-briefcase"></i> Supervisor Jobs Available</span>
+                        <span><i class="fa-solid fa-briefcase"></i> Job Openings</span>
                         <span id="dispatchJobCount" class="category-count-badge">0 Jobs</span>
                     </div>
-                    <div class="dispatch-list-container" id="dispatchJobListContainer">
-                        <!-- Populated dynamically -->
-                    </div>
+                    <div class="dispatch-list-container" id="dispatchJobListContainer"></div>
                 </div>
 
-                <!-- Right Side: Candidate Name & Number List matching Job Profile -->
                 <div class="dispatch-panel-box">
                     <div class="dispatch-panel-header">
-                        <span><i class="fa-solid fa-users"></i> Matching Candidate Sheet</span>
+                        <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Profile</span>
                         <span id="dispatchCandidateCount" class="category-count-badge">0 Candidates</span>
                     </div>
                     <div class="dispatch-list-container" id="dispatchCandidateListContainer">
-                        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Select a job profile or filter to view matching candidates.</div>
+                        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Select a job or filter profile to view matching candidates.</div>
                     </div>
                 </div>
             </div>
 
             <div class="batch-copy-bar">
-                <span id="batchSelectionStatus" style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">No supervisor job selected</span>
-                <button class="copy-btn-single" onclick="copyBatchCandidates()" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-copy"></i> Copy Selected Job & Candidates for Phone</button>
+                <span id="batchSelectionStatus" style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">No job selected</span>
+                <button class="copy-btn-single" onclick="copyBatchCandidates()" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-copy"></i> Copy Selected Job & Matching Candidates for Phone</button>
             </div>
         </div>
     </div>
 
     <script>
         const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
-        const candidateSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv";
+        
+        // Main Sheet URL based on user reference: "MAIN SHEET" CSV export link pointing to Form_responses 1 tab where Current Job Profile (Col G) & Job Applied For (Col I) exist
+        const mainSheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv&gid=0";
 
-        let fallbackData = [
+        let fallbackJobs = [
             {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
             {role: "SECURITY GUARD", gender: "MALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
-            {role: "CONTENT CREATOR", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
-            {role: "RECEPTION", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
             {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "20K-25K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
             {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
-            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "25K-30K", loc: "JALANDHAR BYPASS", city: "LUDHIANA"},
-            {role: "FIELD SALES", gender: "MALE", salary: "20K-25K", loc: "JALANDHAR BYPASS", city: "LUDHIANA"},
-            {role: "DIGITAL MARKETING", gender: "BOTH", salary: "10K-18K", loc: "JALANDHAR BYPASS", city: "LUDHIANA"},
-            {role: "ADMIN EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "MOCHPURA BAZAR", city: "LUDHIANA"},
-            {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "MOCHPURA BAZAR", city: "LUDHIANA"},
-            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "18K-25K", loc: "BHADURKE ROAD", city: "LUDHIANA"},
-            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "18K-25K", loc: "GHANTA GHAR", city: "LUDHIANA"},
-            {role: "ACCOUNT EXECUTIVE", gender: "FEMALE", salary: "10K-14K", loc: "SUNDER NAGAR", city: "LUDHIANA"}
+            {role: "HR RECRUITER", gender: "BOTH", salary: "15K-18K", loc: "LUDHIANA", city: "LUDHIANA"}
         ];
 
-        let fallbackCandidateData = [
-            {name: "AMIT KUMAR", phone: "9876543210", currentProfile: "ACCOUNTANT", appliedProfile: "ACCOUNT EXECUTIVE"},
-            {name: "ROHIT SHARMA", phone: "9123456789", currentProfile: "SALES EXECUTIVE", appliedProfile: "SUPERVISOR"},
-            {name: "PRIYA VERMA", phone: "9988776655", currentProfile: "TELECALLER", appliedProfile: "TELECALLER"},
-            {name: "VISHAL GUPTA", phone: "9811223344", currentProfile: "SUPERVISOR", appliedProfile: "SUPERVISOR"},
-            {name: "NEHA SHARMA", phone: "9722334455", currentProfile: "RECEPTIONIST", appliedProfile: "RECEPTION"}
+        // Fallback matching Main Sheet data structure (Name, Phone, Current Job Profile, Applied Job Profile)
+        let fallbackMainCandidates = [
+            {name: "Jashanpreet Singh", phone: "7973208428", currentProfile: "", appliedProfile: "Me"},
+            {name: "Sachin", phone: "6283936585", currentProfile: "", appliedProfile: "Like hr executive fresher"},
+            {name: "Sanjay Shori", phone: "9548300008", currentProfile: "", appliedProfile: "Above 15000"},
+            {name: "Nitish Sharma", phone: "7986056729", currentProfile: "", appliedProfile: "Any job suitable"},
+            {name: "Khushdeep Kaur", phone: "6284505522", currentProfile: "", appliedProfile: "Data entry"},
+            {name: "Muskaan Gautam", phone: "6283387771", currentProfile: "HR recruiter and HR manager", appliedProfile: "HR manager or HR recruiter"},
+            {name: "Vansh", phone: "8968678171", currentProfile: "Accounting", appliedProfile: "Whatever you feel is right according to my profile."},
+            {name: "Mayank", phone: "8930263800", currentProfile: "Data entry", appliedProfile: "Data entry"}
         ];
 
         let jobsData = [];
-        let candidateData = [];
+        let mainCandidatesData = [];
         let filteredJobs = [];
         let locations = [];
         let salaries = [];
@@ -803,24 +790,24 @@
         async function initApp() {
             try {
                 const response = await fetch(sheetCsvUrl);
-                if (!response.ok) throw new Error("Network response was not ok");
+                if (!response.ok) throw new Error("Network error");
                 const csvText = await response.text();
-                jobsData = parseCSV(csvText);
-                if (jobsData.length === 0) throw new Error("Empty CSV data");
+                jobsData = parseJobsCSV(csvText);
+                if (jobsData.length === 0) throw new Error("Empty data");
             } catch (error) {
-                console.warn("Could not load Google Sheet live, using fallback mock data.", error);
-                jobsData = fallbackData;
+                console.warn("Using fallback jobs data.", error);
+                jobsData = fallbackJobs;
             }
 
             try {
-                const candResponse = await fetch(candidateSheetCsvUrl);
-                if (!candResponse.ok) throw new Error("Candidate sheet network error");
-                const candCsvText = await candResponse.text();
-                candidateData = parseCandidateCSV(candCsvText);
-                if (candidateData.length === 0) throw new Error("Empty candidate CSV");
+                const mainResponse = await fetch(mainSheetCsvUrl);
+                if (!mainResponse.ok) throw new Error("Main Sheet network error");
+                const mainCsvText = await mainResponse.text();
+                mainCandidatesData = parseMainSheetCSV(mainCsvText);
+                if (mainCandidatesData.length === 0) throw new Error("Empty Main Sheet data");
             } catch (error) {
-                console.warn("Could not load candidate Google Sheet, using fallback candidate data.", error);
-                candidateData = fallbackCandidateData;
+                console.warn("Using fallback Main Sheet candidate data.", error);
+                mainCandidatesData = fallbackMainCandidates;
             }
 
             filteredJobs = [...jobsData];
@@ -830,28 +817,7 @@
             renderView(jobsData);
         }
 
-        function parseCSV(text) {
-            let lines = text.split("\n");
-            let result = [];
-            if (lines.length < 2) return result;
-
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                let currentLine = lines[i].split(",");
-                if (currentLine.length >= 5) {
-                    result.push({
-                        role: currentLine[0] ? currentLine[0].replace(/["']/g, "").trim() : "",
-                        gender: currentLine[1] ? currentLine[1].replace(/["']/g, "").trim().toUpperCase() : "",
-                        salary: currentLine[2] ? currentLine[2].replace(/["']/g, "").trim() : "",
-                        loc: currentLine[3] ? currentLine[3].replace(/["']/g, "").trim().toUpperCase() : "",
-                        city: currentLine[4] ? currentLine[4].replace(/["']/g, "").trim().toUpperCase() : ""
-                    });
-                }
-            }
-            return result.length > 0 ? result : fallbackData;
-        }
-
-        function parseCandidateCSV(text) {
+        function parseJobsCSV(text) {
             let lines = text.split("\n");
             let result = [];
             if (lines.length < 2) return result;
@@ -859,16 +825,42 @@
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 let cols = lines[i].split(",");
-                if (cols.length >= 2) {
+                if (cols.length >= 5) {
                     result.push({
-                        name: cols[0] ? cols[0].replace(/["']/g, "").trim().toUpperCase() : "UNKNOWN",
-                        phone: cols[1] ? cols[1].replace(/["']/g, "").trim() : "",
-                        currentProfile: cols[2] ? cols[2].replace(/["']/g, "").trim().toUpperCase() : "",
-                        appliedProfile: cols[3] ? cols[3].replace(/["']/g, "").trim().toUpperCase() : ""
+                        role: cols[0] ? cols[0].replace(/["']/g, "").trim() : "",
+                        gender: cols[1] ? cols[1].replace(/["']/g, "").trim().toUpperCase() : "",
+                        salary: cols[2] ? cols[2].replace(/["']/g, "").trim() : "",
+                        loc: cols[3] ? cols[3].replace(/["']/g, "").trim().toUpperCase() : "",
+                        city: cols[4] ? cols[4].replace(/["']/g, "").trim().toUpperCase() : ""
                     });
                 }
             }
-            return result.length > 0 ? result : fallbackCandidateData;
+            return result.length > 0 ? result : fallbackJobs;
+        }
+
+        function parseMainSheetCSV(text) {
+            let lines = text.split("\n");
+            let result = [];
+            if (lines.length < 2) return result;
+
+            for (let i = 1; i < lines.length; i++) {
+                if (!lines[i].trim()) continue;
+                let cols = lines[i].split(",");
+                if (cols.length >= 9) {
+                    // Based on column mapping from image:
+                    // Col B (Index 1): NAME
+                    // Col C (Index 2): PHONE
+                    // Col G (Index 6): CURRENT JOB PROFILE
+                    // Col I (Index 8): JOB APPLIED FOR
+                    result.push({
+                        name: cols[1] ? cols[1].replace(/["']/g, "").trim() : "UNKNOWN",
+                        phone: cols[2] ? cols[2].replace(/["']/g, "").trim() : "",
+                        currentProfile: cols[6] ? cols[6].replace(/["']/g, "").trim() : "",
+                        appliedProfile: cols[8] ? cols[8].replace(/["']/g, "").trim() : ""
+                    });
+                }
+            }
+            return result.length > 0 ? result : fallbackMainCandidates;
         }
 
         function extractFilterOptions() {
@@ -988,8 +980,8 @@
             const select = document.getElementById('dispatchProfileFilter');
             let profiles = [...new Set([
                 ...jobsData.map(j => j.role),
-                ...candidateData.map(c => c.currentProfile),
-                ...candidateData.map(c => c.appliedProfile)
+                ...mainCandidatesData.map(c => c.currentProfile),
+                ...mainCandidatesData.map(c => c.appliedProfile)
             ])].filter(Boolean).sort();
 
             let html = '<option value="ALL">All Profiles / Categories</option>';
@@ -1026,11 +1018,11 @@
             const profileFilter = document.getElementById('dispatchProfileFilter');
             let matchedOpt = 'ALL';
             
-            // Intelligent substring match for dropdown selector
+            // Substring / keyword matching against dropdown options (e.g. ACCOUNT matching ACCOUNT EXECUTIVE)
             let targetRole = selectedJobForDispatch.role.toUpperCase();
             for(let opt of profileFilter.options) {
                 let val = opt.value.toUpperCase();
-                if(val !== 'ALL' && (targetRole.includes(val) || val.includes(targetRole) || hasSignificantKeywordMatch(targetRole, val))) {
+                if(val !== 'ALL' && (targetRole.includes(val) || val.includes(targetRole) || hasKeywordMatch(targetRole, val))) {
                     matchedOpt = opt.value;
                     break;
                 }
@@ -1041,12 +1033,11 @@
             document.getElementById('batchSelectionStatus').innerHTML = `Selected Job: <b>${selectedJobForDispatch.role}</b> (${selectedJobForDispatch.loc})`;
         }
 
-        // Helper function for smart word matching (e.g., "ACCOUNT" matching "ACCOUNT EXECUTIVE")
-        function hasSignificantKeywordMatch(str1, str2) {
+        function hasKeywordMatch(str1, str2) {
             let words1 = str1.split(/\s+/);
             let words2 = str2.split(/\s+/);
             for(let w1 of words1) {
-                if(w1.length > 3 && words2.some(w2 => w2.includes(w1) || w1.includes(w2))) {
+                if(w1.length > 2 && words2.some(w2 => w2.includes(w1) || w1.includes(w2))) {
                     return true;
                 }
             }
@@ -1058,29 +1049,28 @@
             const profileVal = document.getElementById('dispatchProfileFilter').value.toUpperCase();
             const searchVal = document.getElementById('dispatchSearchInput').value.toUpperCase();
 
-            let matched = candidateData.filter(c => {
+            let matched = mainCandidatesData.filter(c => {
                 let curProf = c.currentProfile.toUpperCase();
                 let appProf = c.appliedProfile.toUpperCase();
                 
                 let matchProfile = (profileVal === 'ALL');
                 
                 if (!matchProfile) {
-                    // Smart Substring & Keyword Matching across both current and applied profiles
+                    // Case-insensitive substring matching: if candidate's Current Job Profile or Applied Job Profile mentions the search word
                     matchProfile = curProf.includes(profileVal) || profileVal.includes(curProf) ||
                                    appProf.includes(profileVal) || profileVal.includes(appProf) ||
-                                   hasSignificantKeywordMatch(curProf, profileVal) ||
-                                   hasSignificantKeywordMatch(appProf, profileVal);
+                                   hasKeywordMatch(curProf, profileVal) ||
+                                   hasKeywordMatch(appProf, profileVal);
                 }
 
-                let matchSearch = (c.name.includes(searchVal) || c.phone.includes(searchVal));
+                let matchSearch = (c.name.toUpperCase().includes(searchVal) || c.phone.includes(searchVal) || curProf.includes(searchVal) || appProf.includes(searchVal));
                 
-                // If a supervisor job is selected and profile is set to ALL, match keywords with the selected job role
                 if (selectedJobForDispatch && profileVal === 'ALL') {
                     let jobRole = selectedJobForDispatch.role.toUpperCase();
                     let matchesJob = curProf.includes(jobRole) || jobRole.includes(curProf) ||
                                      appProf.includes(jobRole) || jobRole.includes(appProf) ||
-                                     hasSignificantKeywordMatch(curProf, jobRole) ||
-                                     hasSignificantKeywordMatch(appProf, jobRole);
+                                     hasKeywordMatch(curProf, jobRole) ||
+                                     hasKeywordMatch(appProf, jobRole);
                     matchProfile = matchProfile || matchesJob;
                 }
 
@@ -1090,7 +1080,7 @@
             document.getElementById('dispatchCandidateCount').innerText = `${matched.length} Candidates`;
 
             if(matched.length === 0) {
-                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching this filter.</div>`;
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching profile in Main Sheet.</div>`;
                 return;
             }
 
@@ -1101,9 +1091,9 @@
                         <div>
                             <strong>${c.name}</strong><br>
                             <span style="font-size:0.75rem; color:var(--primary-dark); font-weight:600;"><i class="fa-solid fa-phone"></i> ${c.phone}</span><br>
-                            <span style="font-size:0.72rem; color:var(--text-muted);">Current: ${c.currentProfile} | Applied: ${c.appliedProfile}</span>
+                            <span style="font-size:0.72rem; color:var(--text-muted);">Current: <b>${c.currentProfile || 'N/A'}</b> | Applied: <b>${c.appliedProfile || 'N/A'}</b></span>
                         </div>
-                        <button class="copy-btn-single" onclick="copySingleCandidate('${c.name}', '${c.phone}', '${c.currentProfile}')">
+                        <button class="copy-btn-single" onclick="copySingleCandidate('${c.name}', '${c.phone}', '${c.currentProfile}', '${c.appliedProfile}')">
                             <i class="fa-solid fa-copy"></i> Copy
                         </button>
                     </div>
@@ -1112,25 +1102,23 @@
             container.innerHTML = html;
         }
 
-        function copySingleCandidate(name, phone, profile) {
-            let textToCopy = `Candidate Name: ${name}\nPhone: ${phone}\nProfile: ${profile}`;
+        function copySingleCandidate(name, phone, curProfile, appProfile) {
+            let textToCopy = `Candidate Name: ${name}\nPhone: ${phone}\nCurrent Profile: ${curProfile}\nApplied Profile: ${appProfile}`;
             navigator.clipboard.writeText(textToCopy).then(() => {
                 alert(`Copied to clipboard!\n\n${textToCopy}`);
-            }).catch(err => {
-                console.error("Failed to copy text: ", err);
             });
         }
 
         function copyBatchCandidates() {
             const profileVal = document.getElementById('dispatchProfileFilter').value.toUpperCase();
-            let matched = candidateData.filter(c => {
+            let matched = mainCandidatesData.filter(c => {
                 let curProf = c.currentProfile.toUpperCase();
                 let appProf = c.appliedProfile.toUpperCase();
                 if (profileVal === 'ALL') return true;
                 return curProf.includes(profileVal) || profileVal.includes(curProf) ||
                        appProf.includes(profileVal) || profileVal.includes(appProf) ||
-                       hasSignificantKeywordMatch(curProf, profileVal) ||
-                       hasSignificantKeywordMatch(appProf, profileVal);
+                       hasKeywordMatch(curProf, profileVal) ||
+                       hasKeywordMatch(appProf, profileVal);
             });
 
             if (matched.length === 0) {
@@ -1138,7 +1126,7 @@
                 return;
             }
 
-            let report = `*CANDIDATE DISPATCH LIST*\n`;
+            let report = `*CANDIDATE DISPATCH LIST (MAIN SHEET)*\n`;
             if (selectedJobForDispatch) {
                 report += `Job Opening: *${selectedJobForDispatch.role}* at *${selectedJobForDispatch.loc}* (${selectedJobForDispatch.salary})\n\n`;
             } else {
@@ -1146,13 +1134,11 @@
             }
 
             matched.forEach((c, index) => {
-                report += `${index + 1}. *${c.name}* - ${c.phone} (${c.currentProfile})\n`;
+                report += `${index + 1}. *${c.name}* - ${c.phone} | Current: ${c.currentProfile || 'N/A'} | Applied: ${c.appliedProfile || 'N/A'}\n`;
             });
 
             navigator.clipboard.writeText(report).then(() => {
-                alert("Job and Candidate list copied successfully! Ready to paste into phone/WhatsApp.");
-            }).catch(err => {
-                console.error("Failed to copy batch text: ", err);
+                alert("Batch candidate list copied successfully!");
             });
         }
 
@@ -1294,13 +1280,7 @@
 
         function downloadStatusImage() {
             const element = document.getElementById('statusGraphicCard');
-            html2canvas(element, { 
-                scale: 3, 
-                useCORS: true,
-                allowTaint: true,
-                scrollX: 0,
-                scrollY: 0
-            }).then(canvas => {
+            html2canvas(element, { scale: 3, useCORS: true, allowTaint: true }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'job-openings-status.png';
                 link.href = canvas.toDataURL('image/png', 1.0);
@@ -1314,7 +1294,6 @@
                 message += `• *${j.role}* | ${j.gender} | ${j.salary} | ${j.loc}\n`;
             });
             message += "\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250 ONLY*";
-            
             const encodedUrl = encodeURIComponent(message);
             window.open(`https://api.whatsapp.com/send?text=${encodedUrl}`, '_blank');
         }
