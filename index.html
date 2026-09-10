@@ -557,6 +557,8 @@
             padding: 10px 14px;
             border-radius: 8px;
             border: 1px solid #bfdbfe;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         /* MOBILE ADJUSTMENTS */
@@ -711,13 +713,13 @@
         <!-- NEW PASSWORD PROTECTED CANDIDATE DISPATCH SCREEN -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="font-size: 1.1rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch Management (Google Sheet Integration)</h3>
+                <h3 style="font-size: 1.1rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch Management (Smart Substring Matching)</h3>
                 <button onclick="switchView('cards')" style="background: #e2e8f0; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
             
             <div class="dispatch-controls">
                 <div class="filter-group">
-                    <label><i class="fa-solid id-card"></i> Filter Candidate by Profile</label>
+                    <label><i class="fa-solid fa-id-card"></i> Filter Candidate by Profile</label>
                     <select id="dispatchProfileFilter" class="search-input" onchange="renderDispatchCandidates()">
                         <option value="ALL">All Profiles / Categories</option>
                     </select>
@@ -761,9 +763,6 @@
 
     <script>
         const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
-        
-        // Candidate Google Sheet Link provided by user: https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/edit?usp=sharing
-        // Converted to CSV export link for dynamic fetching:
         const candidateSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv";
 
         let fallbackData = [
@@ -784,7 +783,7 @@
         ];
 
         let fallbackCandidateData = [
-            {name: "AMIT KUMAR", phone: "9876543210", currentProfile: "ACCOUNT EXECUTIVE", appliedProfile: "ACCOUNT EXECUTIVE"},
+            {name: "AMIT KUMAR", phone: "9876543210", currentProfile: "ACCOUNTANT", appliedProfile: "ACCOUNT EXECUTIVE"},
             {name: "ROHIT SHARMA", phone: "9123456789", currentProfile: "SALES EXECUTIVE", appliedProfile: "SUPERVISOR"},
             {name: "PRIYA VERMA", phone: "9988776655", currentProfile: "TELECALLER", appliedProfile: "TELECALLER"},
             {name: "VISHAL GUPTA", phone: "9811223344", currentProfile: "SUPERVISOR", appliedProfile: "SUPERVISOR"},
@@ -813,7 +812,6 @@
                 jobsData = fallbackData;
             }
 
-            // Fetch Candidate Google Sheet
             try {
                 const candResponse = await fetch(candidateSheetCsvUrl);
                 if (!candResponse.ok) throw new Error("Candidate sheet network error");
@@ -936,7 +934,6 @@
             }
         }
 
-        // PASSWORD PROTECTION & DISPATCH NAVIGATION
         function requestDispatchAccess() {
             if (isDispatchUnlocked) {
                 switchView('dispatch');
@@ -975,7 +972,6 @@
             document.getElementById('statusWrapper').style.display = (viewType === 'status') ? 'block' : 'none';
             document.getElementById('dispatchWrapper').style.display = (viewType === 'dispatch') ? 'block' : 'none';
             
-            // Hide/Show main filter panel depending on view
             const hideFilters = (viewType === 'dispatch');
             document.getElementById('filterPanelMain').style.display = hideFilters ? 'none' : 'grid';
             document.getElementById('statsBarMain').style.display = hideFilters ? 'none' : 'flex';
@@ -988,7 +984,6 @@
             }
         }
 
-        // CANDIDATE DISPATCH LOGIC
         function initDispatchProfiles() {
             const select = document.getElementById('dispatchProfileFilter');
             let profiles = [...new Set([
@@ -1028,31 +1023,65 @@
             selectedJobForDispatch = jobsData[index];
             renderDispatchJobs();
             
-            // Automatically set profile filter to match selected job role if available
             const profileFilter = document.getElementById('dispatchProfileFilter');
+            let matchedOpt = 'ALL';
+            
+            // Intelligent substring match for dropdown selector
+            let targetRole = selectedJobForDispatch.role.toUpperCase();
             for(let opt of profileFilter.options) {
-                if(opt.value.toUpperCase() === selectedJobForDispatch.role.toUpperCase()) {
-                    profileFilter.value = opt.value;
+                let val = opt.value.toUpperCase();
+                if(val !== 'ALL' && (targetRole.includes(val) || val.includes(targetRole) || hasSignificantKeywordMatch(targetRole, val))) {
+                    matchedOpt = opt.value;
                     break;
                 }
             }
+            profileFilter.value = matchedOpt;
             renderDispatchCandidates();
             
             document.getElementById('batchSelectionStatus').innerHTML = `Selected Job: <b>${selectedJobForDispatch.role}</b> (${selectedJobForDispatch.loc})`;
         }
 
+        // Helper function for smart word matching (e.g., "ACCOUNT" matching "ACCOUNT EXECUTIVE")
+        function hasSignificantKeywordMatch(str1, str2) {
+            let words1 = str1.split(/\s+/);
+            let words2 = str2.split(/\s+/);
+            for(let w1 of words1) {
+                if(w1.length > 3 && words2.some(w2 => w2.includes(w1) || w1.includes(w2))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         function renderDispatchCandidates() {
             const container = document.getElementById('dispatchCandidateListContainer');
-            const profileVal = document.getElementById('dispatchProfileFilter').value;
+            const profileVal = document.getElementById('dispatchProfileFilter').value.toUpperCase();
             const searchVal = document.getElementById('dispatchSearchInput').value.toUpperCase();
 
             let matched = candidateData.filter(c => {
-                let matchProfile = (profileVal === 'ALL' || c.currentProfile.includes(profileVal) || c.appliedProfile.includes(profileVal));
+                let curProf = c.currentProfile.toUpperCase();
+                let appProf = c.appliedProfile.toUpperCase();
+                
+                let matchProfile = (profileVal === 'ALL');
+                
+                if (!matchProfile) {
+                    // Smart Substring & Keyword Matching across both current and applied profiles
+                    matchProfile = curProf.includes(profileVal) || profileVal.includes(curProf) ||
+                                   appProf.includes(profileVal) || profileVal.includes(appProf) ||
+                                   hasSignificantKeywordMatch(curProf, profileVal) ||
+                                   hasSignificantKeywordMatch(appProf, profileVal);
+                }
+
                 let matchSearch = (c.name.includes(searchVal) || c.phone.includes(searchVal));
                 
-                // If a supervisor job is selected, also boost matches for that role
+                // If a supervisor job is selected and profile is set to ALL, match keywords with the selected job role
                 if (selectedJobForDispatch && profileVal === 'ALL') {
-                    matchProfile = matchProfile || c.currentProfile.includes(selectedJobForDispatch.role) || c.appliedProfile.includes(selectedJobForDispatch.role);
+                    let jobRole = selectedJobForDispatch.role.toUpperCase();
+                    let matchesJob = curProf.includes(jobRole) || jobRole.includes(curProf) ||
+                                     appProf.includes(jobRole) || jobRole.includes(appProf) ||
+                                     hasSignificantKeywordMatch(curProf, jobRole) ||
+                                     hasSignificantKeywordMatch(appProf, jobRole);
+                    matchProfile = matchProfile || matchesJob;
                 }
 
                 return matchProfile && matchSearch;
@@ -1093,9 +1122,15 @@
         }
 
         function copyBatchCandidates() {
-            const profileVal = document.getElementById('dispatchProfileFilter').value;
+            const profileVal = document.getElementById('dispatchProfileFilter').value.toUpperCase();
             let matched = candidateData.filter(c => {
-                return (profileVal === 'ALL' || c.currentProfile.includes(profileVal) || c.appliedProfile.includes(profileVal));
+                let curProf = c.currentProfile.toUpperCase();
+                let appProf = c.appliedProfile.toUpperCase();
+                if (profileVal === 'ALL') return true;
+                return curProf.includes(profileVal) || profileVal.includes(curProf) ||
+                       appProf.includes(profileVal) || profileVal.includes(appProf) ||
+                       hasSignificantKeywordMatch(curProf, profileVal) ||
+                       hasSignificantKeywordMatch(appProf, profileVal);
             });
 
             if (matched.length === 0) {
