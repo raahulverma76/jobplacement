@@ -473,14 +473,6 @@
             gap: 12px;
             margin-bottom: 15px;
         }
-        .dispatch-split-view {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-        }
-        @media (max-width: 768px) {
-            .dispatch-split-view { grid-template-columns: 1fr; }
-        }
         .dispatch-panel-box {
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -488,17 +480,17 @@
             padding: 12px;
             display: flex;
             flex-direction: column;
-            height: 420px;
+            min-height: 480px;
         }
         .dispatch-panel-header {
             font-weight: 700;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             color: #1e293b;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding-bottom: 6px;
+            padding-bottom: 8px;
             border-bottom: 1px solid var(--border);
         }
         .dispatch-list-container {
@@ -506,51 +498,39 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 6px;
+            gap: 8px;
+            max-height: 520px;
         }
-        .dispatch-item-card {
-            background: #fff;
-            padding: 9px 12px;
-            border-radius: 8px;
-            border: 1px solid #e2e8f0;
-            font-size: 0.85rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.15s ease;
-        }
-        .dispatch-item-card:hover { border-color: var(--primary); background: #eff6ff; }
-        .dispatch-item-card.selected { border-color: var(--primary); background: #dbeafe; font-weight: 600; }
-        
         .candidate-card-row {
             background: #fff;
-            padding: 10px 12px;
+            padding: 11px 14px;
             border-radius: 8px;
             border: 1px solid #e2e8f0;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
         }
         .copy-btn-single {
             background: #059669;
             color: white;
             border: none;
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.78rem;
             font-weight: 600;
             cursor: pointer;
+            white-space: nowrap;
         }
         .copy-btn-single:hover { background: #047857; }
         .batch-copy-bar {
-            margin-top: 12px;
+            margin-top: 15px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: #eff6ff;
-            padding: 10px 14px;
+            padding: 12px 16px;
             border-radius: 8px;
             border: 1px solid #bfdbfe;
             flex-wrap: wrap;
@@ -704,10 +684,10 @@
             </div>
         </div>
 
-        <!-- CANDIDATE DISPATCH SCREEN (MAPPED TO "MAIN SHEET") -->
+        <!-- CANDIDATE DISPATCH SCREEN (FULL WIDTH CANDIDATE LIST) -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                <h3 style="font-size: 1.1rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet (Current & Applied Profile Matching)</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet</h3>
                 <button onclick="switchView('cards')" style="background: #e2e8f0; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
             
@@ -724,37 +704,25 @@
                 </div>
             </div>
 
-            <div class="dispatch-split-view">
-                <div class="dispatch-panel-box">
-                    <div class="dispatch-panel-header">
-                        <span><i class="fa-solid fa-briefcase"></i> Job Openings</span>
-                        <span id="dispatchJobCount" class="category-count-badge">0 Jobs</span>
-                    </div>
-                    <div class="dispatch-list-container" id="dispatchJobListContainer"></div>
+            <div class="dispatch-panel-box">
+                <div class="dispatch-panel-header">
+                    <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Profile</span>
+                    <span id="dispatchCandidateCount" class="category-count-badge">0 Candidates</span>
                 </div>
-
-                <div class="dispatch-panel-box">
-                    <div class="dispatch-panel-header">
-                        <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Profile</span>
-                        <span id="dispatchCandidateCount" class="category-count-badge">0 Candidates</span>
-                    </div>
-                    <div class="dispatch-list-container" id="dispatchCandidateListContainer">
-                        <div style="text-align: center; color: var(--text-muted); padding: 40px;">Select a job or filter profile to view matching candidates.</div>
-                    </div>
+                <div class="dispatch-list-container" id="dispatchCandidateListContainer">
+                    <div style="text-align: center; color: var(--text-muted); padding: 40px;">Loading candidates...</div>
                 </div>
             </div>
 
             <div class="batch-copy-bar">
-                <span id="batchSelectionStatus" style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">No job selected</span>
-                <button class="copy-btn-single" onclick="copyBatchCandidates()" style="padding: 8px 16px; font-size: 0.85rem;"><i class="fa-solid fa-copy"></i> Copy Selected Job & Matching Candidates for Phone</button>
+                <span id="batchSelectionStatus" style="font-size: 0.88rem; font-weight: 600; color: #1e293b;">Showing all matching candidates</span>
+                <button class="copy-btn-single" onclick="copyBatchCandidates()" style="padding: 9px 16px; font-size: 0.85rem;"><i class="fa-solid fa-copy"></i> Copy All Filtered Candidates</button>
             </div>
         </div>
     </div>
 
     <script>
         const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
-        
-        // Main Sheet URL based on user reference: "MAIN SHEET" CSV export link pointing to Form_responses 1 tab where Current Job Profile (Col G) & Job Applied For (Col I) exist
         const mainSheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv&gid=0";
 
         let fallbackJobs = [
@@ -765,7 +733,6 @@
             {role: "HR RECRUITER", gender: "BOTH", salary: "15K-18K", loc: "LUDHIANA", city: "LUDHIANA"}
         ];
 
-        // Fallback matching Main Sheet data structure (Name, Phone, Current Job Profile, Applied Job Profile)
         let fallbackMainCandidates = [
             {name: "Jashanpreet Singh", phone: "7973208428", currentProfile: "", appliedProfile: "Me"},
             {name: "Sachin", phone: "6283936585", currentProfile: "", appliedProfile: "Like hr executive fresher"},
@@ -785,7 +752,6 @@
         let genders = [];
         let currentView = 'cards';
         let isDispatchUnlocked = false;
-        let selectedJobForDispatch = null;
 
         async function initApp() {
             try {
@@ -964,7 +930,6 @@
             document.getElementById('statsBarMain').style.display = hideFilters ? 'none' : 'flex';
 
             if (viewType === 'dispatch') {
-                renderDispatchJobs();
                 renderDispatchCandidates();
             } else {
                 filterData();
@@ -984,47 +949,6 @@
                 html += `<option value="${p}">${p}</option>`;
             });
             select.innerHTML = html;
-        }
-
-        function renderDispatchJobs() {
-            const container = document.getElementById('dispatchJobListContainer');
-            document.getElementById('dispatchJobCount').innerText = `${jobsData.length} Jobs`;
-
-            let html = '';
-            jobsData.forEach((job, idx) => {
-                let isSelected = (selectedJobForDispatch && selectedJobForDispatch.role === job.role && selectedJobForDispatch.loc === job.loc);
-                html += `
-                    <div class="dispatch-item-card ${isSelected ? 'selected' : ''}" onclick="selectJobForDispatch(${idx})">
-                        <div>
-                            <strong>${job.role}</strong><br>
-                            <span style="font-size:0.75rem; color:var(--text-muted);"><i class="fa-solid fa-location-dot"></i> ${job.loc}, ${job.city} | ${job.salary}</span>
-                        </div>
-                        <span class="badge ${job.gender === 'FEMALE' ? 'badge-female' : 'badge-male'}">${job.gender}</span>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function selectJobForDispatch(index) {
-            selectedJobForDispatch = jobsData[index];
-            renderDispatchJobs();
-            
-            const profileFilter = document.getElementById('dispatchProfileFilter');
-            let matchedOpt = 'ALL';
-            
-            let targetRole = selectedJobForDispatch.role.toUpperCase();
-            for(let opt of profileFilter.options) {
-                let val = opt.value.toUpperCase();
-                if(val !== 'ALL' && (targetRole.includes(val) || val.includes(targetRole) || hasKeywordMatch(targetRole, val))) {
-                    matchedOpt = opt.value;
-                    break;
-                }
-            }
-            profileFilter.value = matchedOpt;
-            renderDispatchCandidates();
-            
-            document.getElementById('batchSelectionStatus').innerHTML = `Selected Job: <b>${selectedJobForDispatch.role}</b> (${selectedJobForDispatch.loc})`;
         }
 
         function hasKeywordMatch(str1, str2) {
@@ -1057,20 +981,12 @@
                 }
 
                 let matchSearch = (c.name.toUpperCase().includes(searchVal) || c.phone.includes(searchVal) || curProf.includes(searchVal) || appProf.includes(searchVal));
-                
-                if (selectedJobForDispatch && profileVal === 'ALL') {
-                    let jobRole = selectedJobForDispatch.role.toUpperCase();
-                    let matchesJob = curProf.includes(jobRole) || jobRole.includes(curProf) ||
-                                     appProf.includes(jobRole) || jobRole.includes(appProf) ||
-                                     hasKeywordMatch(curProf, jobRole) ||
-                                     hasKeywordMatch(appProf, jobRole);
-                    matchProfile = matchProfile || matchesJob;
-                }
 
                 return matchProfile && matchSearch;
             });
 
             document.getElementById('dispatchCandidateCount').innerText = `${matched.length} Candidates`;
+            document.getElementById('batchSelectionStatus').innerHTML = `Filtered Profile: <b>${profileVal}</b> (${matched.length} records found)`;
 
             if(matched.length === 0) {
                 container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching profile in Main Sheet.</div>`;
@@ -1083,8 +999,8 @@
                     <div class="candidate-card-row">
                         <div>
                             <strong>${c.name}</strong><br>
-                            <span style="font-size:0.75rem; color:var(--primary-dark); font-weight:600;"><i class="fa-solid fa-phone"></i> ${c.phone}</span><br>
-                            <span style="font-size:0.72rem; color:var(--text-muted);">Current: <b>${c.currentProfile || 'N/A'}</b> | Applied: <b>${c.appliedProfile || 'N/A'}</b></span>
+                            <span style="font-size:0.78rem; color:var(--primary-dark); font-weight:600;"><i class="fa-solid fa-phone"></i> ${c.phone}</span><br>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">Current: <b>${c.currentProfile || 'N/A'}</b> | Applied: <b>${c.appliedProfile || 'N/A'}</b></span>
                         </div>
                         <button class="copy-btn-single" onclick="copySingleCandidate('${c.name}', '${c.phone}', '${c.currentProfile}', '${c.appliedProfile}')">
                             <i class="fa-solid fa-copy"></i> Copy
@@ -1120,11 +1036,7 @@
             }
 
             let report = `*CANDIDATE DISPATCH LIST (MAIN SHEET)*\n`;
-            if (selectedJobForDispatch) {
-                report += `Job Opening: *${selectedJobForDispatch.role}* at *${selectedJobForDispatch.loc}* (${selectedJobForDispatch.salary})\n\n`;
-            } else {
-                report += `Filter Profile: *${profileVal}*\n\n`;
-            }
+            report += `Filter Profile: *${profileVal}*\n\n`;
 
             matched.forEach((c, index) => {
                 report += `${index + 1}. *${c.name}* - ${c.phone} | Current: ${c.currentProfile || 'N/A'} | Applied: ${c.appliedProfile || 'N/A'}\n`;
