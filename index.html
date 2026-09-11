@@ -847,11 +847,6 @@
                 if (!lines[i].trim()) continue;
                 let cols = lines[i].split(",");
                 if (cols.length >= 9) {
-                    // Based on column mapping from image:
-                    // Col B (Index 1): NAME
-                    // Col C (Index 2): PHONE
-                    // Col G (Index 6): CURRENT JOB PROFILE
-                    // Col I (Index 8): JOB APPLIED FOR
                     result.push({
                         name: cols[1] ? cols[1].replace(/["']/g, "").trim() : "UNKNOWN",
                         phone: cols[2] ? cols[2].replace(/["']/g, "").trim() : "",
@@ -1018,7 +1013,6 @@
             const profileFilter = document.getElementById('dispatchProfileFilter');
             let matchedOpt = 'ALL';
             
-            // Substring / keyword matching against dropdown options (e.g. ACCOUNT matching ACCOUNT EXECUTIVE)
             let targetRole = selectedJobForDispatch.role.toUpperCase();
             for(let opt of profileFilter.options) {
                 let val = opt.value.toUpperCase();
@@ -1056,7 +1050,6 @@
                 let matchProfile = (profileVal === 'ALL');
                 
                 if (!matchProfile) {
-                    // Case-insensitive substring matching: if candidate's Current Job Profile or Applied Job Profile mentions the search word
                     matchProfile = curProf.includes(profileVal) || profileVal.includes(curProf) ||
                                    appProf.includes(profileVal) || profileVal.includes(appProf) ||
                                    hasKeywordMatch(curProf, profileVal) ||
