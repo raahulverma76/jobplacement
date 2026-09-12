@@ -480,7 +480,7 @@
         }
         .dispatch-controls {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 12px;
             margin-bottom: 15px;
         }
@@ -704,10 +704,10 @@
             </div>
         </div>
 
-        <!-- CANDIDATE DISPATCH SCREEN (FULL WIDTH CANDIDATE LIST WITH MULTI-SELECT PROFILE FILTER) -->
+        <!-- CANDIDATE DISPATCH SCREEN (FULL WIDTH CANDIDATE LIST WITH MULTI-SELECT PROFILE & DATE RANGE FILTER) -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet Form Responses 1 (Col G & I Matcher)</h3>
+                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet Form Responses 1</h3>
                 <button onclick="switchView('cards')" style="background: #e2e8f0; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
             
@@ -726,6 +726,14 @@
                     </div>
                 </div>
                 <div class="filter-group">
+                    <label><i class="fa-solid fa-calendar-days"></i> Start Date</label>
+                    <input type="date" id="dispatchStartDate" class="search-input" onchange="renderDispatchCandidates()">
+                </div>
+                <div class="filter-group">
+                    <label><i class="fa-solid fa-calendar-days"></i> End Date</label>
+                    <input type="date" id="dispatchEndDate" class="search-input" onchange="renderDispatchCandidates()">
+                </div>
+                <div class="filter-group">
                     <label><i class="fa-solid fa-magnifying-glass"></i> Search Name / Phone / Profile</label>
                     <input type="text" id="dispatchSearchInput" class="search-input" placeholder="Search candidate..." onkeyup="renderDispatchCandidates()">
                 </div>
@@ -733,7 +741,7 @@
 
             <div class="dispatch-panel-box">
                 <div class="dispatch-panel-header">
-                    <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Profile(s)</span>
+                    <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Filters</span>
                     <span id="dispatchCandidateCount" class="category-count-badge">0 Candidates</span>
                 </div>
                 <div class="dispatch-list-container" id="dispatchCandidateListContainer">
@@ -749,27 +757,17 @@
     </div>
 
     <script>
-        // Main Job Openings Sheet URL (1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4)
         const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
-        
-        // Candidate Dispatch Sheet URL (17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I) with gid=312570486 for "Main Sheet Form responses 1"
         const mainSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&gid=312570486";
 
         let fallbackJobs = [
             {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
-            {role: "SECURITY GUARD", gender: "MALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
-            {role: "ACCOUNT EXECUTIVE", gender: "MALE", salary: "20K-25K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
-            {role: "TELECALLER", gender: "FEMALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
-            {role: "HR RECRUITER", gender: "BOTH", salary: "15K-18K", loc: "LUDHIANA", city: "LUDHIANA"}
+            {role: "SECURITY GUARD", gender: "MALE", salary: "10K-15K", loc: "SRAFA BAZZAR", city: "LUDHIANA"}
         ];
 
         let fallbackMainCandidates = [
-            {name: "Gurpreet singh", phone: "91-9898810159", currentProfile: "mechanical engineer and operation", appliedProfile: "operation manager"},
-            {name: "Hardeep singh", phone: "+91 96535 74306", currentProfile: "Branch manager", appliedProfile: "Team handling"},
-            {name: "Gaurav", phone: "99151 55565", currentProfile: "commission agent /broker", appliedProfile: "supervisor"},
-            {name: "shagun sharma", phone: "+91 94781 28219", currentProfile: "support executive", appliedProfile: "Hardware and networking"},
-            {name: "Diksha", phone: "+91 80548 00905", currentProfile: "fresher", appliedProfile: "fresher"},
-            {name: "Muskaan Gautam", phone: "6283387771", currentProfile: "HR recruiter and HR manager", appliedProfile: "HR manager or HR recruiter"}
+            {timestamp: "16/09/2025 16:12:32", name: "Gurpreet singh", phone: "91-9898810159", currentProfile: "mechanical engineer and operation", appliedProfile: "operation manager"},
+            {timestamp: "16/09/2025 16:38:30", name: "Hardeep singh", phone: "+91 96535 74306", currentProfile: "Branch manager", appliedProfile: "Team handling"}
         ];
 
         let jobsData = [];
@@ -789,7 +787,6 @@
                 jobsData = parseJobsCSV(csvText);
                 if (jobsData.length === 0) throw new Error("Empty data");
             } catch (error) {
-                console.warn("Using fallback jobs data.", error);
                 jobsData = fallbackJobs;
             }
 
@@ -800,7 +797,6 @@
                 mainCandidatesData = parseMainSheetCSV(mainCsvText);
                 if (mainCandidatesData.length === 0) throw new Error("Empty Main Sheet data");
             } catch (error) {
-                console.warn("Using fallback Main Sheet candidate data.", error);
                 mainCandidatesData = fallbackMainCandidates;
             }
 
@@ -840,9 +836,9 @@
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 let cols = lines[i].split(",");
-                // Column B (Name) is index 1, Column C (Phone) is index 2, Column G (Current Profile) is index 6, Column I (Applied For) is index 8
                 if (cols.length >= 9) {
                     result.push({
+                        timestamp: cols[0] ? cols[0].replace(/["']/g, "").trim() : "",
                         name: cols[1] ? cols[1].replace(/["']/g, "").trim() : "UNKNOWN",
                         phone: cols[2] ? cols[2].replace(/["']/g, "").trim() : "",
                         currentProfile: cols[6] ? cols[6].replace(/["']/g, "").trim() : "",
@@ -1011,18 +1007,40 @@
             return false;
         }
 
+        function parseTimestampToDate(tsStr) {
+            if (!tsStr) return null;
+            // Expected format: DD/MM/YYYY HH:MM:SS or DD-MM-YYYY
+            let parts = tsStr.split(' ')[0].split(/[\/\-]/);
+            if (parts.length === 3) {
+                let day = parseInt(parts[0], 10);
+                let month = parseInt(parts[1], 10) - 1;
+                let year = parseInt(parts[2], 10);
+                if (!isNaN(day) && !isNaN(month) && !isNaN(year)) {
+                    return new Date(year, month, day);
+                }
+            }
+            let d = new Date(tsStr);
+            return isNaN(d.getTime()) ? null : new Date(d.getFullYear(), d.getMonth(), d.getDate());
+        }
+
         function renderDispatchCandidates() {
             updateDispatchProfileLabel();
             const container = document.getElementById('dispatchCandidateListContainer');
             const selectedProfiles = getSelectedValues('dispatchProfileDropdown').map(p => p.toUpperCase());
             const searchVal = document.getElementById('dispatchSearchInput').value.toUpperCase();
+            
+            const startDateVal = document.getElementById('dispatchStartDate').value;
+            const endDateVal = document.getElementById('dispatchEndDate').value;
+            let startDate = startDateVal ? new Date(startDateVal) : null;
+            let endDate = endDateVal ? new Date(endDateVal) : null;
+            if (startDate) startDate.setHours(0,0,0,0);
+            if (endDate) endDate.setHours(23,59,59,999);
 
             let matched = mainCandidatesData.filter(c => {
                 let curProf = c.currentProfile.toUpperCase();
                 let appProf = c.appliedProfile.toUpperCase();
                 
                 let matchProfile = (selectedProfiles.length === 0);
-                
                 if (!matchProfile) {
                     matchProfile = selectedProfiles.some(profileVal => {
                         return curProf.includes(profileVal) || profileVal.includes(curProf) ||
@@ -1034,7 +1052,18 @@
 
                 let matchSearch = (c.name.toUpperCase().includes(searchVal) || c.phone.includes(searchVal) || curProf.includes(searchVal) || appProf.includes(searchVal));
 
-                return matchProfile && matchSearch;
+                let matchDate = true;
+                if (startDate || endDate) {
+                    let cDate = parseTimestampToDate(c.timestamp);
+                    if (cDate) {
+                        if (startDate && cDate < startDate) matchDate = false;
+                        if (endDate && cDate > endDate) matchDate = false;
+                    } else {
+                        matchDate = false;
+                    }
+                }
+
+                return matchProfile && matchSearch && matchDate;
             });
 
             document.getElementById('dispatchCandidateCount').innerText = `${matched.length} Candidates`;
@@ -1042,7 +1071,7 @@
             document.getElementById('batchSelectionStatus').innerHTML = `Filtered Profile(s): <b>${profileStatusText}</b> (${matched.length} records found)`;
 
             if(matched.length === 0) {
-                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching selected profile(s) in Form Responses 1.</div>`;
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching filters in Form Responses 1.</div>`;
                 return;
             }
 
@@ -1051,11 +1080,11 @@
                 html += `
                     <div class="candidate-card-row">
                         <div>
-                            <strong>${c.name}</strong><br>
+                            <strong>${c.name}</strong> <span style="font-size:0.75rem; color:var(--text-muted);">(${c.timestamp || 'No Date'})</span><br>
                             <span style="font-size:0.78rem; color:var(--primary-dark); font-weight:600;"><i class="fa-solid fa-phone"></i> ${c.phone}</span><br>
                             <span style="font-size:0.75rem; color:var(--text-muted);">Current (Col G): <b>${c.currentProfile || 'N/A'}</b> | Applied (Col I): <b>${c.appliedProfile || 'N/A'}</b></span>
                         </div>
-                        <button class="copy-btn-single" onclick="copySingleCandidate('${c.name}', '${c.phone}', '${c.currentProfile}', '${c.appliedProfile}')">
+                        <button class="copy-btn-single" onclick="copySingleCandidate('${c.name}', '${c.phone}', '${c.currentProfile}', '${c.appliedProfile}', '${c.timestamp}')">
                             <i class="fa-solid fa-copy"></i> Copy
                         </button>
                     </div>
@@ -1064,8 +1093,8 @@
             container.innerHTML = html;
         }
 
-        function copySingleCandidate(name, phone, curProfile, appProfile) {
-            let textToCopy = `Candidate Name: ${name}\nPhone: ${phone}\nCurrent Profile (Col G): ${curProfile}\nApplied Profile (Col I): ${appProfile}`;
+        function copySingleCandidate(name, phone, curProfile, appProfile, timestamp) {
+            let textToCopy = `Candidate Name: ${name}\nPhone: ${phone}\nTimestamp: ${timestamp}\nCurrent Profile (Col G): ${curProfile}\nApplied Profile (Col I): ${appProfile}`;
             navigator.clipboard.writeText(textToCopy).then(() => {
                 alert(`Copied to clipboard!\n\n${textToCopy}`);
             });
@@ -1073,16 +1102,36 @@
 
         function copyBatchCandidates() {
             const selectedProfiles = getSelectedValues('dispatchProfileDropdown').map(p => p.toUpperCase());
+            const startDateVal = document.getElementById('dispatchStartDate').value;
+            const endDateVal = document.getElementById('dispatchEndDate').value;
+            let startDate = startDateVal ? new Date(startDateVal) : null;
+            let endDate = endDateVal ? new Date(endDateVal) : null;
+            if (startDate) startDate.setHours(0,0,0,0);
+            if (endDate) endDate.setHours(23,59,59,999);
+
             let matched = mainCandidatesData.filter(c => {
                 let curProf = c.currentProfile.toUpperCase();
                 let appProf = c.appliedProfile.toUpperCase();
-                if (selectedProfiles.length === 0) return true;
-                return selectedProfiles.some(profileVal => {
-                    return curProf.includes(profileVal) || profileVal.includes(curProf) ||
-                           appProf.includes(profileVal) || profileVal.includes(appProf) ||
-                           hasKeywordMatch(curProf, profileVal) ||
-                           hasKeywordMatch(appProf, profileVal);
-                });
+                let matchProfile = (selectedProfiles.length === 0);
+                if (!matchProfile) {
+                    matchProfile = selectedProfiles.some(profileVal => {
+                        return curProf.includes(profileVal) || profileVal.includes(curProf) ||
+                               appProf.includes(profileVal) || profileVal.includes(appProf) ||
+                               hasKeywordMatch(curProf, profileVal) ||
+                               hasKeywordMatch(appProf, profileVal);
+                    });
+                }
+                let matchDate = true;
+                if (startDate || endDate) {
+                    let cDate = parseTimestampToDate(c.timestamp);
+                    if (cDate) {
+                        if (startDate && cDate < startDate) matchDate = false;
+                        if (endDate && cDate > endDate) matchDate = false;
+                    } else {
+                        matchDate = false;
+                    }
+                }
+                return matchProfile && matchDate;
             });
 
             if (matched.length === 0) {
@@ -1095,7 +1144,7 @@
             report += `Filter Profile(s): *${profileStatusText}*\n\n`;
 
             matched.forEach((c, index) => {
-                report += `${index + 1}. *${c.name}* - ${c.phone} | Current (Col G): ${c.currentProfile || 'N/A'} | Applied (Col I): ${c.appliedProfile || 'N/A'}\n`;
+                report += `${index + 1}. *${c.name}* (${c.timestamp}) - ${c.phone} | Current: ${c.currentProfile || 'N/A'} | Applied: ${c.appliedProfile || 'N/A'}\n`;
             });
 
             navigator.clipboard.writeText(report).then(() => {
