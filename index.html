@@ -707,7 +707,7 @@
         <!-- CANDIDATE DISPATCH SCREEN (FULL WIDTH CANDIDATE LIST WITH MULTI-SELECT PROFILE FILTER) -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet (Col G & I Matcher)</h3>
+                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet Form response 1 (Col G & I Matcher)</h3>
                 <button onclick="switchView('cards')" style="background: #e2e8f0; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
             
@@ -733,7 +733,7 @@
 
             <div class="dispatch-panel-box">
                 <div class="dispatch-panel-header">
-                    <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Profile(s)</span>
+                    <span><i class="fa-solid fa-users"></i> Main Sheet Form response 1 Candidates Matching Profile(s)</span>
                     <span id="dispatchCandidateCount" class="category-count-badge">0 Candidates</span>
                 </div>
                 <div class="dispatch-list-container" id="dispatchCandidateListContainer">
@@ -749,8 +749,8 @@
     </div>
 
     <script>
-        const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
-        const mainSheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv&gid=0";
+        const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1lujZG603EP1Arl5gRvWaM2LXIMNEcfqztS6NvNcW8I/export?format=csv";
+        const mainSheetCsvUrl = "https://docs.google.com/spreadsheets/d/1lujZG603EP1Arl5gRvWaM2LXIMNEcfqztS6NvNcW8I/export?format=csv&gid=312570486";
 
         let fallbackJobs = [
             {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
@@ -761,14 +761,14 @@
         ];
 
         let fallbackMainCandidates = [
-            {name: "Jashanpreet Singh", phone: "7973208428", currentProfile: "", appliedProfile: "Me"},
-            {name: "Sachin", phone: "6283936585", currentProfile: "", appliedProfile: "Like hr executive fresher"},
-            {name: "Sanjay Shori", phone: "9548300008", currentProfile: "", appliedProfile: "Above 15000"},
-            {name: "Nitish Sharma", phone: "7986056729", currentProfile: "", appliedProfile: "Any job suitable"},
-            {name: "Khushdeep Kaur", phone: "6284505522", currentProfile: "", appliedProfile: "Data entry"},
-            {name: "Muskaan Gautam", phone: "6283387771", currentProfile: "HR recruiter and HR manager", appliedProfile: "HR manager or HR recruiter"},
-            {name: "Vansh", phone: "8968678171", currentProfile: "Accounting", appliedProfile: "Whatever you feel is right according to my profile."},
-            {name: "Mayank", phone: "8930263800", currentProfile: "Data entry", appliedProfile: "Data entry"}
+            {name: "Gurpreet singh", phone: "91-9898810159", currentProfile: "mechanical engineer and operation manager", appliedProfile: "operation manager"},
+            {name: "Hardeep singh", phone: "+91 96535 74306", currentProfile: "Branch manager", appliedProfile: "team handling"},
+            {name: "Gaurav", phone: "99151 55565", currentProfile: "commission agent /broker", appliedProfile: "supervisor"},
+            {name: "shagun sharma", phone: "+91 94781 28219", currentProfile: "support executive", appliedProfile: "Hardware and networking"},
+            {name: "Diksha", phone: "+91 80548 00905", currentProfile: "fresher", appliedProfile: "fresher"},
+            {name: "Ravi kumar", phone: "+91 99888 69687", currentProfile: "medicine marketing", appliedProfile: "marketing"},
+            {name: "Kiran", phone: "+91 98763 70583", currentProfile: "fresher", appliedProfile: "ea"},
+            {name: "Aman sharma", phone: "+91 98141 13759", currentProfile: "sale executive data entry", appliedProfile: "marketing"}
         ];
 
         let jobsData = [];
@@ -837,16 +837,37 @@
             if (lines.length < 2) return result;
 
             for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                let cols = lines[i].split(",");
-                // Column G is index 6, Column I is index 8 (0-indexed: B=1, C=2, G=6, I=8)
+                let line = lines[i].trim();
+                if (!line) continue;
+                
+                // Simple CSV line parser handling quotes if present
+                let cols = [];
+                let current = '';
+                let inQuotes = false;
+                for (let charIndex = 0; charIndex < line.length; charIndex++) {
+                    let char = line[charIndex];
+                    if (char === '"') {
+                        inQuotes = !inQuotes;
+                    } else if (char === ',' && !inQuotes) {
+                        cols.push(current);
+                        current = '';
+                    } else {
+                        current += char;
+                    }
+                }
+                cols.push(current);
+
+                // Column B is index 1 (NAME), C is index 2 (PHONE), G is index 6 (CURRENT JOB PROFILE), I is index 8 (JOB APPLIED FOR)
                 if (cols.length >= 9) {
-                    result.push({
-                        name: cols[1] ? cols[1].replace(/["']/g, "").trim() : "UNKNOWN",
-                        phone: cols[2] ? cols[2].replace(/["']/g, "").trim() : "",
-                        currentProfile: cols[6] ? cols[6].replace(/["']/g, "").trim() : "",
-                        appliedProfile: cols[8] ? cols[8].replace(/["']/g, "").trim() : ""
-                    });
+                    let name = cols[1] ? cols[1].replace(/["']/g, "").trim() : "UNKNOWN";
+                    let phone = cols[2] ? cols[2].replace(/["']/g, "").trim() : "";
+                    let currentProfile = cols[6] ? cols[6].replace(/["']/g, "").trim() : "";
+                    let appliedProfile = cols[8] ? cols[8].replace(/["']/g, "").trim() : "";
+                    
+                    // Skip header or empty name rows if any leak through
+                    if (name && name.toUpperCase() !== 'NAME (नाम)') {
+                        result.push({ name, phone, currentProfile, appliedProfile });
+                    }
                 }
             }
             return result.length > 0 ? result : fallbackMainCandidates;
@@ -984,7 +1005,16 @@
                 ...mainCandidatesData.map(c => c.appliedProfile)
             ])].filter(Boolean).sort();
 
-            populateDropdown('dispatchProfileDropdown', profiles);
+            const container = document.querySelector('#dispatchProfileDropdown .dropdown-items-container');
+            let html = '';
+            profiles.forEach(item => {
+                html += `
+                    <label class="dropdown-item" data-value="${item.toLowerCase()}">
+                        <input type="checkbox" value="${item}" onchange="renderDispatchCandidates()"> ${item}
+                    </label>
+                `;
+            });
+            container.innerHTML = html;
         }
 
         function updateDispatchProfileLabel() {
@@ -1041,7 +1071,7 @@
             document.getElementById('batchSelectionStatus').innerHTML = `Filtered Profile(s): <b>${profileStatusText}</b> (${matched.length} records found)`;
 
             if(matched.length === 0) {
-                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching selected profile(s) in Main Sheet.</div>`;
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching selected profile(s) in Main Sheet Form response 1.</div>`;
                 return;
             }
 
@@ -1090,7 +1120,7 @@
             }
 
             let profileStatusText = selectedProfiles.length === 0 ? 'All Profiles' : selectedProfiles.join(', ');
-            let report = `*CANDIDATE DISPATCH LIST (MAIN SHEET)*\n`;
+            let report = `*CANDIDATE DISPATCH LIST (MAIN SHEET FORM RESPONSE 1)*\n`;
             report += `Filter Profile(s): *${profileStatusText}*\n\n`;
 
             matched.forEach((c, index) => {
@@ -1226,7 +1256,6 @@
             }
 
             let html = '';
-            data.jobsData = data;
             data.forEach(job => {
                 html += `
                     <tr>
