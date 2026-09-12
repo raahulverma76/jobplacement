@@ -749,9 +749,11 @@
     </div>
 
     <script>
-        const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1lujZG603EP1Arl5gRvwaM2LXIMNEcfqztS6NVncW8I/export?format=csv";
-        // Updated Main Sheet link pointing directly to "Main Sheet Form responses 1" tab (gid=312570486 as seen in your sheet URL)
-        const mainSheetCsvUrl = "https://docs.google.com/spreadsheets/d/1lujZG603EP1Arl5gRvwaM2LXIMNEcfqztS6NVncW8I/export?format=csv&gid=312570486";
+        // Main Job Openings Sheet URL (1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4)
+        const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
+        
+        // Candidate Dispatch Sheet URL (17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I) with gid=312570486 for "Main Sheet Form responses 1"
+        const mainSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&gid=312570486";
 
         let fallbackJobs = [
             {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA"},
@@ -762,14 +764,12 @@
         ];
 
         let fallbackMainCandidates = [
-            {name: "Jashanpreet Singh", phone: "7973208428", currentProfile: "", appliedProfile: "Me"},
-            {name: "Sachin", phone: "6283936585", currentProfile: "", appliedProfile: "Like hr executive fresher"},
-            {name: "Sanjay Shori", phone: "9548300008", currentProfile: "", appliedProfile: "Above 15000"},
-            {name: "Nitish Sharma", phone: "7986056729", currentProfile: "", appliedProfile: "Any job suitable"},
-            {name: "Khushdeep Kaur", phone: "6284505522", currentProfile: "", appliedProfile: "Data entry"},
-            {name: "Muskaan Gautam", phone: "6283387771", currentProfile: "HR recruiter and HR manager", appliedProfile: "HR manager or HR recruiter"},
-            {name: "Vansh", phone: "8968678171", currentProfile: "Accounting", appliedProfile: "Whatever you feel is right according to my profile."},
-            {name: "Mayank", phone: "8930263800", currentProfile: "Data entry", appliedProfile: "Data entry"}
+            {name: "Gurpreet singh", phone: "91-9898810159", currentProfile: "mechanical engineer and operation", appliedProfile: "operation manager"},
+            {name: "Hardeep singh", phone: "+91 96535 74306", currentProfile: "Branch manager", appliedProfile: "Team handling"},
+            {name: "Gaurav", phone: "99151 55565", currentProfile: "commission agent /broker", appliedProfile: "supervisor"},
+            {name: "shagun sharma", phone: "+91 94781 28219", currentProfile: "support executive", appliedProfile: "Hardware and networking"},
+            {name: "Diksha", phone: "+91 80548 00905", currentProfile: "fresher", appliedProfile: "fresher"},
+            {name: "Muskaan Gautam", phone: "6283387771", currentProfile: "HR recruiter and HR manager", appliedProfile: "HR manager or HR recruiter"}
         ];
 
         let jobsData = [];
@@ -872,7 +872,7 @@
                 if(item) {
                     html += `
                         <label class="dropdown-item" data-value="${item.toLowerCase()}">
-                            <input type="checkbox" value="${item}" onchange="filterData()"> ${item}
+                            <input type="checkbox" value="${item}" onchange="${dropdownId === 'dispatchProfileDropdown' ? 'renderDispatchCandidates()' : 'filterData()'}"> ${item}
                         </label>
                     `;
                 }
