@@ -600,9 +600,8 @@
     <script>
         const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
         
-        // Google Sheet URL specifically targeting sheet tab named "Main Sheet Form responses 1" via gid or sheet name parameter if supported, or standard CSV export of that tab.
-        // Assuming standard URL format for specific sheet tab: gid can be appended or sheet name parameter. Let's provide a robust URL parser or parameter support.
-        const candidateSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&sheet=Main%20Sheet%20Form%20responses%281%29";
+        // Google Sheet URL explicitly targeting "Main Sheet Form responses 1" via gid=312570486
+        const candidateSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&gid=312570486";
 
         let fallbackJobs = [
             {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA", timestamp: new Date()},
@@ -707,16 +706,16 @@
                 if (!lineText) continue;
                 let cols = parseCSVLine(lineText);
                 
-                // Column index mapping: A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8
-                // We extract name, phone (adjust indices if name/phone are in specific columns, usually A and B or similar, here we default name=0, phone=1, col G=6, col I=8)
-                let name = cols[0] ? cols[0].replace(/["']/g, "").trim() : "Unknown";
-                let phone = cols[1] ? cols[1].replace(/["']/g, "").trim() : "";
+                // Column Mapping based on "Main Sheet Form responses 1":
+                // Col A (0): Timestamp, Col B (1): NAME, Col C (2): PHONE, Col G (6): Current Job Profile, Col I (8): Job Applied For
+                let name = cols[1] ? cols[1].replace(/["']/g, "").trim() : "";
+                let phone = cols[2] ? cols[2].replace(/["']/g, "").trim() : "";
                 let colG = cols[6] ? cols[6].replace(/["']/g, "").trim().toUpperCase() : "";
                 let colI = cols[8] ? cols[8].replace(/["']/g, "").trim().toUpperCase() : "";
 
                 if (name || colG || colI) {
                     result.push({
-                        name: name,
+                        name: name || "Unknown",
                         phone: phone,
                         colG: colG,
                         colI: colI
