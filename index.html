@@ -447,7 +447,7 @@
                         <span><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</span>
                         <span class="total-jobs-badge"><i class="fa-solid fa-layer-group"></i> <span id="topTotalJobsCount">0</span> Available Jobs</span>
                     </h1>
-                    <p>Live Google Sheets integration with category cards, table, status generator & candidate matcher</p>
+                    <p>Live Google Sheets integration with category cards, table, status generator & candidates list</p>
                 </div>
             </div>
         </header>
@@ -568,10 +568,10 @@
         <!-- CANDIDATE MATCHER SCREEN (PASSWORD PROTECTED) -->
         <div class="candidate-wrapper" id="candidateWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-                <h3 style="color: var(--primary); margin:0;"><i class="fa-solid fa-address-book"></i> Main Sheet Candidates Matching Profile</h3>
+                <h3 style="color: var(--primary); margin:0;"><i class="fa-solid fa-address-book"></i> Main Sheet Form responses 1</h3>
                 <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                     <div>
-                        <label style="font-weight: 600; margin-right: 8px; font-size: 0.85rem;">Filter Profile:</label>
+                        <label style="font-weight: 600; margin-right: 8px; font-size: 0.85rem;">Filter Profile (Col G & I):</label>
                         <select id="candidateProfileSelect" onchange="renderCandidatesData()" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); font-size: 0.9rem;">
                             <option value="">-- All Profiles --</option>
                         </select>
@@ -599,7 +599,10 @@
 
     <script>
         const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
-        const candidateSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv";
+        
+        // Google Sheet URL specifically targeting sheet tab named "Main Sheet Form responses 1" via gid or sheet name parameter if supported, or standard CSV export of that tab.
+        // Assuming standard URL format for specific sheet tab: gid can be appended or sheet name parameter. Let's provide a robust URL parser or parameter support.
+        const candidateSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&sheet=Main%20Sheet%20Form%20responses%281%29";
 
         let fallbackJobs = [
             {role: "SALES EXECUTIVE", gender: "FEMALE", salary: "10K-18K", loc: "SRAFA BAZZAR", city: "LUDHIANA", timestamp: new Date()},
@@ -610,9 +613,9 @@
         ];
 
         let fallbackCandidates = [
-            {name: "Jashanpreet Singh", phone: "7973208428", currentProfile: "SUPERVISOR", appliedProfile: "SUPERVISOR"},
-            {name: "Sachin", phone: "6283936585", currentProfile: "HR EXECUTIVE", appliedProfile: "HR EXECUTIVE"},
-            {name: "Muskaan Gautam", phone: "6283387771", currentProfile: "HR RECRUITER", appliedProfile: "HR RECRUITER"}
+            {name: "Jashanpreet Singh", phone: "7973208428", colG: "SUPERVISOR", colI: "MANAGER"},
+            {name: "Sachin", phone: "6283936585", colG: "HR EXECUTIVE", colI: "HR HEAD"},
+            {name: "Muskaan Gautam", phone: "6283387771", colG: "HR RECRUITER", colI: "RECRUITER"}
         ];
 
         let jobsData = [];
@@ -675,6 +678,25 @@
             return result.length > 0 ? result : fallbackJobs;
         }
 
+        function parseCSVLine(textLine) {
+            let result = [];
+            let insideQuotes = false;
+            let currentField = '';
+            for (let i = 0; i < textLine.length; i++) {
+                let char = textLine[i];
+                if (char === '"') {
+                    insideQuotes = !insideQuotes;
+                } else if (char === ',' && !insideQuotes) {
+                    result.push(currentField.trim());
+                    currentField = '';
+                } else {
+                    currentField += char;
+                }
+            }
+            result.push(currentField.trim());
+            return result;
+        }
+
         function parseCandidateCSV(text) {
             let lines = text.split("\n");
             let result = [];
@@ -683,13 +705,21 @@
             for (let i = 1; i < lines.length; i++) {
                 let lineText = lines[i].trim();
                 if (!lineText) continue;
-                let cols = lineText.split(",");
-                if (cols.length >= 3) {
+                let cols = parseCSVLine(lineText);
+                
+                // Column index mapping: A=0, B=1, C=2, D=3, E=4, F=5, G=6, H=7, I=8
+                // We extract name, phone (adjust indices if name/phone are in specific columns, usually A and B or similar, here we default name=0, phone=1, col G=6, col I=8)
+                let name = cols[0] ? cols[0].replace(/["']/g, "").trim() : "Unknown";
+                let phone = cols[1] ? cols[1].replace(/["']/g, "").trim() : "";
+                let colG = cols[6] ? cols[6].replace(/["']/g, "").trim().toUpperCase() : "";
+                let colI = cols[8] ? cols[8].replace(/["']/g, "").trim().toUpperCase() : "";
+
+                if (name || colG || colI) {
                     result.push({
-                        name: cols[0] ? cols[0].replace(/["']/g, "").trim() : "",
-                        phone: cols[1] ? cols[1].replace(/["']/g, "").trim() : "",
-                        currentProfile: cols[2] ? cols[2].replace(/["']/g, "").trim().toUpperCase() : "",
-                        appliedProfile: cols[3] ? cols[3].replace(/["']/g, "").trim().toUpperCase() : (cols[2] ? cols[2].replace(/["']/g, "").trim().toUpperCase() : "")
+                        name: name,
+                        phone: phone,
+                        colG: colG,
+                        colI: colI
                     });
                 }
             }
@@ -784,15 +814,15 @@
 
         function populateCandidateProfileDropdown() {
             const selectElem = document.getElementById('candidateProfileSelect');
-            let profilesSet = new Set();
+            let combinedSet = new Set();
             
             candidatesData.forEach(c => {
-                if(c.currentProfile) profilesSet.add(c.currentProfile);
-                if(c.appliedProfile) profilesSet.add(c.appliedProfile);
+                if(c.colG) combinedSet.add(c.colG);
+                if(c.colI) combinedSet.add(c.colI);
             });
 
-            let sortedProfiles = Array.from(profilesSet).sort();
-            let html = '<option value="">-- All Profiles --</option>';
+            let sortedProfiles = Array.from(combinedSet).sort();
+            let html = '<option value="">-- All Profiles (Col G & I Combined) --</option>';
             sortedProfiles.forEach(profile => {
                 html += `<option value="${profile}">${profile}</option>`;
             });
@@ -807,28 +837,28 @@
             let filtered = candidatesData;
             if (selectedProfile) {
                 filtered = candidatesData.filter(c => 
-                    (c.currentProfile && c.currentProfile.includes(selectedProfile)) || 
-                    (c.appliedProfile && c.appliedProfile.includes(selectedProfile))
+                    (c.colG && c.colG.includes(selectedProfile)) || 
+                    (c.colI && c.colI.includes(selectedProfile))
                 );
             }
 
             countElem.innerText = filtered.length;
 
             if (filtered.length === 0) {
-                container.innerHTML = '<p style="color: #dc2626; font-size: 0.85rem; padding: 10px;">No candidates found matching the selected profile.</p>';
+                container.innerHTML = '<p style="color: #dc2626; font-size: 0.85rem; padding: 10px;">No candidates found matching the selected profile in Column G or I.</p>';
                 return;
             }
 
             let html = '';
             filtered.forEach((cand, index) => {
-                let cardText = `${cand.name} - ${cand.phone} (Current: ${cand.currentProfile || 'N/A'} | Applied: ${cand.appliedProfile || 'N/A'})`;
+                let cardText = `${cand.name} - ${cand.phone} [Col G: ${cand.colG || 'N/A'}, Col I: ${cand.colI || 'N/A'}]`;
                 html += `
                     <div style="background: #fff; padding: 10px 14px; margin-bottom: 8px; border-radius: 6px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; gap: 10px;">
                         <div>
                             <strong>${index + 1}. ${cand.name}</strong><br>
                             <a href="tel:${cand.phone}" style="color: var(--primary); text-decoration: none; font-weight:600;"><i class="fa-solid fa-phone"></i> ${cand.phone}</a>
                             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
-                                Current: <strong>${cand.currentProfile || '-'}</strong> | Applied: <strong>${cand.appliedProfile || '-'}</strong>
+                                Col G: <strong>${cand.colG || '-'}</strong> | Col I: <strong>${cand.colI || '-'}</strong>
                             </div>
                         </div>
                         <button onclick="navigator.clipboard.writeText('${cardText}'); alert('Copied to Clipboard!');" style="background: var(--primary); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600; white-space: nowrap;">
@@ -845,8 +875,8 @@
             let filtered = candidatesData;
             if (selectedProfile) {
                 filtered = candidatesData.filter(c => 
-                    (c.currentProfile && c.currentProfile.includes(selectedProfile)) || 
-                    (c.appliedProfile && c.appliedProfile.includes(selectedProfile))
+                    (c.colG && c.colG.includes(selectedProfile)) || 
+                    (c.colI && c.colI.includes(selectedProfile))
                 );
             }
 
@@ -855,7 +885,7 @@
                 return;
             }
 
-            let textToCopy = filtered.map((c, i) => `${i + 1}. ${c.name} - ${c.phone} [Current: ${c.currentProfile}, Applied: ${c.appliedProfile}]`).join("\n");
+            let textToCopy = filtered.map((c, i) => `${i + 1}. ${c.name} - ${c.phone} [Col G: ${c.colG}, Col I: ${c.colI}]`).join("\n");
             navigator.clipboard.writeText(textToCopy);
             alert(`Successfully copied ${filtered.length} candidates! Paste anywhere.`);
         }
