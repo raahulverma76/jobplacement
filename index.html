@@ -704,7 +704,7 @@
             </div>
         </div>
 
-        <!-- CANDIDATE DISPATCH SCREEN (FULL WIDTH CANDIDATE LIST WITH MULTI-SELECT PROFILE & DATE RANGE FILTER) -->
+        <!-- CANDIDATE DISPATCH SCREEN -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
                 <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet Form Responses 1</h3>
@@ -1009,7 +1009,6 @@
 
         function parseTimestampToDate(tsStr) {
             if (!tsStr) return null;
-            // Expected format: DD/MM/YYYY HH:MM:SS or DD-MM-YYYY
             let parts = tsStr.split(' ')[0].split(/[\/\-]/);
             if (parts.length === 3) {
                 let day = parseInt(parts[0], 10);
@@ -1081,16 +1080,27 @@
                     <div class="candidate-card-row">
                         <div>
                             <strong>${c.name}</strong> <span style="font-size:0.75rem; color:var(--text-muted);">(${c.timestamp || 'No Date'})</span><br>
-                            <span style="font-size:0.78rem; color:var(--primary-dark); font-weight:600;"><i class="fa-solid fa-phone"></i> ${c.phone}</span><br>
+                            <span style="font-size:0.78rem; color:var(--primary-dark); font-weight:600; cursor:pointer;" onclick="copyTextDirect('${c.phone}')" title="Click to copy phone number"><i class="fa-solid fa-phone"></i> ${c.phone} <i class="fa-regular fa-copy" style="font-size:0.7rem;"></i></span><br>
                             <span style="font-size:0.75rem; color:var(--text-muted);">Current (Col G): <b>${c.currentProfile || 'N/A'}</b> | Applied (Col I): <b>${c.appliedProfile || 'N/A'}</b></span>
                         </div>
-                        <button class="copy-btn-single" onclick="copySingleCandidate('${c.name}', '${c.phone}', '${c.currentProfile}', '${c.appliedProfile}', '${c.timestamp}')">
-                            <i class="fa-solid fa-copy"></i> Copy
-                        </button>
+                        <div style="display:flex; gap:6px;">
+                            <button class="copy-btn-single" style="background:#0284c7;" onclick="copyTextDirect('${c.phone}')">
+                                <i class="fa-solid fa-phone"></i> Phone
+                            </button>
+                            <button class="copy-btn-single" onclick="copySingleCandidate('${c.name}', '${c.phone}', '${c.currentProfile}', '${c.appliedProfile}', '${c.timestamp}')">
+                                <i class="fa-solid fa-copy"></i> All
+                            </button>
+                        </div>
                     </div>
                 `;
             });
             container.innerHTML = html;
+        }
+
+        function copyTextDirect(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert(`Copied: ${text}`);
+            });
         }
 
         function copySingleCandidate(name, phone, curProfile, appProfile, timestamp) {
@@ -1139,16 +1149,14 @@
                 return;
             }
 
-            let profileStatusText = selectedProfiles.length === 0 ? 'All Profiles' : selectedProfiles.join(', ');
-            let report = `*CANDIDATE DISPATCH LIST (FORM RESPONSES 1)*\n`;
-            report += `Filter Profile(s): *${profileStatusText}*\n\n`;
-
+            // ONLY CANDIDATE DETAILS - NO HEADERS / NO LABELS ABOUT FILTERS
+            let report = "";
             matched.forEach((c, index) => {
-                report += `${index + 1}. *${c.name}* (${c.timestamp}) - ${c.phone} | Current: ${c.currentProfile || 'N/A'} | Applied: ${c.appliedProfile || 'N/A'}\n`;
+                report += `${index + 1}. Name: ${c.name} | Phone: ${c.phone} | Date: ${c.timestamp || 'N/A'} | Current: ${c.currentProfile || 'N/A'} | Applied: ${c.appliedProfile || 'N/A'}\n`;
             });
 
-            navigator.clipboard.writeText(report).then(() => {
-                alert("Batch candidate list copied successfully!");
+            navigator.clipboard.writeText(report.trim()).then(() => {
+                alert("All filtered candidates copied successfully (Without headers)!");
             });
         }
 
