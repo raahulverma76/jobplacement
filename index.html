@@ -447,7 +447,7 @@
                         <span><i class="fa-solid fa-briefcase"></i> Job Openings Dashboard</span>
                         <span class="total-jobs-badge"><i class="fa-solid fa-layer-group"></i> <span id="topTotalJobsCount">0</span> Available Jobs</span>
                     </h1>
-                    <p>Live Google Sheets integration with category cards, table, status generator & candidates list</p>
+                    <p>Live Google Sheets integration with multi-search roles, multi-select dropdowns & candidate matcher</p>
                 </div>
             </div>
         </header>
@@ -469,12 +469,12 @@
 
         <div class="filter-panel" id="filterPanelMain">
             <div class="filter-group">
-                <label><i class="fa-solid fa-magnifying-glass"></i> Search Role</label>
-                <input type="text" id="searchInput" class="search-input" placeholder="Type role name..." onkeyup="filterData()">
+                <label><i class="fa-solid fa-magnifying-glass"></i> Search Roles (Multi-Search, use comma)</label>
+                <input type="text" id="searchInput" class="search-input" placeholder="e.g. hr, manager, sales" onkeyup="filterData()">
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-location-dot"></i> Locations</label>
+                <label><i class="fa-solid fa-location-dot"></i> Locations (Multi-Select)</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('locDropdown')">
                         <span id="locLabel">All Locations</span>
@@ -485,7 +485,7 @@
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-indian-rupee-sign"></i> Salary Range</label>
+                <label><i class="fa-solid fa-indian-rupee-sign"></i> Salary Range (Multi-Select)</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('salDropdown')">
                         <span id="salLabel">All Salaries</span>
@@ -496,7 +496,7 @@
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-venus-mars"></i> Gender</label>
+                <label><i class="fa-solid fa-venus-mars"></i> Gender (Multi-Select)</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('genDropdown')">
                         <span id="genLabel">All Genders</span>
@@ -598,9 +598,8 @@
     </div>
 
     <script>
-        const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/1hEXq3f1MZt5UMgWl_6bIlQZvKuGdg7QJjcPNDxTPac4/export?format=csv";
-        
-        // Google Sheet URL explicitly targeting "Main Sheet Form responses 1" via gid=312570486
+        // Updated workbook URL pointing to "Main Sheet Form responses 1" (gid=312570486)
+        const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&gid=312570486";
         const candidateSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&gid=312570486";
 
         let fallbackJobs = [
@@ -655,28 +654,6 @@
             renderView(jobsData);
         }
 
-        function parseJobsCSV(text) {
-            let lines = text.split("\n");
-            let result = [];
-            if (lines.length < 2) return result;
-
-            for (let i = 1; i < lines.length; i++) {
-                if (!lines[i].trim()) continue;
-                let cols = lines[i].split(",");
-                if (cols.length >= 5) {
-                    result.push({
-                        role: cols[0] ? cols[0].replace(/["']/g, "").trim() : "",
-                        gender: cols[1] ? cols[1].replace(/["']/g, "").trim().toUpperCase() : "",
-                        salary: cols[2] ? cols[2].replace(/["']/g, "").trim() : "",
-                        loc: cols[3] ? cols[3].replace(/["']/g, "").trim().toUpperCase() : "",
-                        city: cols[4] ? cols[4].replace(/["']/g, "").trim().toUpperCase() : "",
-                        timestamp: cols[5] ? new Date(cols[5].replace(/["']/g, "").trim()) : new Date()
-                    });
-                }
-            }
-            return result.length > 0 ? result : fallbackJobs;
-        }
-
         function parseCSVLine(textLine) {
             let result = [];
             let insideQuotes = false;
@@ -696,6 +673,43 @@
             return result;
         }
 
+        function parseJobsCSV(text) {
+            let lines = text.split("\n");
+            let result = [];
+            if (lines.length < 2) return result;
+
+            for (let i = 1; i < lines.length; i++) {
+                let lineText = lines[i].trim();
+                if (!lineText) continue;
+                let cols = parseCSVLine(lineText);
+                
+                // Mapping based on "Main Sheet Form responses 1" headers seen in image:
+                // Col A (0): Timestamp
+                // Col B (1): NAME (mapped to role if needed, or adjust depending on your columns)
+                // Let's check headers from screenshot: Timestamp(0), NAME(1), PHONE(2), GENDER(3), EDUCATION(4), LOCATION(5), CURRENT JOB PROFILE(6), SALARY EX(7), JOB APPLIED FOR(8)
+                // Wait! If the user wants to pull job listings from "Main Sheet Form responses 1" starting at AD2 or similar, let's map columns robustly:
+                // Let's map Role/Job Profile from Column I (8) or Column G (6), Location from Column F (5), Salary from Column H (7), Gender from Column D (3), Timestamp from Column A (0)
+                let role = cols[8] ? cols[8].replace(/["']/g, "").trim() : (cols[6] ? cols[6].replace(/["']/g, "").trim() : "");
+                let gender = cols[3] ? cols[3].replace(/["']/g, "").trim().toUpperCase() : "";
+                let salary = cols[7] ? cols[7].replace(/["']/g, "").trim() : "";
+                let loc = cols[5] ? cols[5].replace(/["']/g, "").trim().toUpperCase() : "";
+                let city = cols[5] ? cols[5].replace(/["']/g, "").trim().toUpperCase() : "LUDHIANA";
+                let timestamp = cols[0] ? new Date(cols[0].replace(/["']/g, "").trim()) : new Date();
+
+                if (role) {
+                    result.push({
+                        role: role.toUpperCase(),
+                        gender: gender || "BOTH",
+                        salary: salary || "As per norms",
+                        loc: loc || "LUDHIANA",
+                        city: city || "LUDHIANA",
+                        timestamp: isNaN(timestamp) ? new Date() : timestamp
+                    });
+                }
+            }
+            return result.length > 0 ? result : fallbackJobs;
+        }
+
         function parseCandidateCSV(text) {
             let lines = text.split("\n");
             let result = [];
@@ -706,8 +720,6 @@
                 if (!lineText) continue;
                 let cols = parseCSVLine(lineText);
                 
-                // Column Mapping based on "Main Sheet Form responses 1":
-                // Col A (0): Timestamp, Col B (1): NAME, Col C (2): PHONE, Col G (6): Current Job Profile, Col I (8): Job Applied For
                 let name = cols[1] ? cols[1].replace(/["']/g, "").trim() : "";
                 let phone = cols[2] ? cols[2].replace(/["']/g, "").trim() : "";
                 let colG = cols[6] ? cols[6].replace(/["']/g, "").trim().toUpperCase() : "";
@@ -917,13 +929,25 @@
 
         function filterData() {
             updateLabels();
-            const searchVal = document.getElementById('searchInput').value.toUpperCase();
+            const rawSearchVal = document.getElementById('searchInput').value.trim().toUpperCase();
+            
+            // Support Multi-Search separated by comma or space
+            let searchKeywords = [];
+            if (rawSearchVal) {
+                searchKeywords = rawSearchVal.split(/[,]+/).map(k => k.trim()).filter(k => k.length > 0);
+            }
+
             const selectedLocs = getSelectedValues('locDropdown');
             const selectedSals = getSelectedValues('salDropdown');
             const selectedGens = getSelectedValues('genDropdown');
 
             filteredJobs = jobsData.filter(job => {
-                const matchSearch = job.role.toUpperCase().includes(searchVal);
+                let matchSearch = true;
+                if (searchKeywords.length > 0) {
+                    // Job matches if its role includes ANY of the comma-separated search keywords (Multi-Search)
+                    matchSearch = searchKeywords.some(keyword => job.role.includes(keyword));
+                }
+
                 const matchLoc = selectedLocs.length === 0 || selectedLocs.includes(job.loc);
                 const matchSal = selectedSals.length === 0 || selectedSals.includes(job.salary);
                 const matchGen = selectedGens.length === 0 || selectedGens.includes(job.gender);
