@@ -156,13 +156,24 @@
             border-radius: 8px;
             margin-top: 4px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            max-height: 200px;
+            max-height: 220px;
             overflow-y: auto;
             display: none;
             z-index: 100;
             padding: 8px;
         }
         .dropdown-list.show { display: block; }
+        .dropdown-search {
+            width: 100%;
+            padding: 7px 10px;
+            margin-bottom: 6px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            outline: none;
+        }
+        .dropdown-search:focus { border-color: var(--primary); }
+
         .dropdown-item {
             display: flex;
             align-items: center;
@@ -474,35 +485,44 @@
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-location-dot"></i> Locations (Multi-Select)</label>
+                <label><i class="fa-solid fa-location-dot"></i> Locations (Multi-Select & Search)</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('locDropdown')">
                         <span id="locLabel">All Locations</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div id="locDropdown" class="dropdown-list"></div>
+                    <div id="locDropdown" class="dropdown-list">
+                        <input type="text" class="dropdown-search" placeholder="Search location..." oninput="filterDropdownOptions('locDropdown', this.value)">
+                        <div class="dropdown-items-container"></div>
+                    </div>
                 </div>
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-indian-rupee-sign"></i> Salary Range (Multi-Select)</label>
+                <label><i class="fa-solid fa-indian-rupee-sign"></i> Salary Range (Multi-Select & Search)</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('salDropdown')">
                         <span id="salLabel">All Salaries</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div id="salDropdown" class="dropdown-list"></div>
+                    <div id="salDropdown" class="dropdown-list">
+                        <input type="text" class="dropdown-search" placeholder="Search salary..." oninput="filterDropdownOptions('salDropdown', this.value)">
+                        <div class="dropdown-items-container"></div>
+                    </div>
                 </div>
             </div>
 
             <div class="filter-group">
-                <label><i class="fa-solid fa-venus-mars"></i> Gender (Multi-Select)</label>
+                <label><i class="fa-solid fa-venus-mars"></i> Gender (Multi-Select & Search)</label>
                 <div class="dropdown-container">
                     <div class="dropdown-select-btn" onclick="toggleDropdown('genDropdown')">
                         <span id="genLabel">All Genders</span>
                         <i class="fa-solid fa-chevron-down"></i>
                     </div>
-                    <div id="genDropdown" class="dropdown-list"></div>
+                    <div id="genDropdown" class="dropdown-list">
+                        <input type="text" class="dropdown-search" placeholder="Search gender..." oninput="filterDropdownOptions('genDropdown', this.value)">
+                        <div class="dropdown-items-container"></div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -598,7 +618,6 @@
     </div>
 
     <script>
-        // Updated workbook URL pointing to "Main Sheet Form responses 1" (gid=312570486)
         const sheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&gid=312570486";
         const candidateSheetCsvUrl = "https://docs.google.com/spreadsheets/d/17lujZG603EP1ArI5gRvwaM2LXlMNEcfqztS6NvNCw8I/export?format=csv&gid=312570486";
 
@@ -683,12 +702,6 @@
                 if (!lineText) continue;
                 let cols = parseCSVLine(lineText);
                 
-                // Mapping based on "Main Sheet Form responses 1" headers seen in image:
-                // Col A (0): Timestamp
-                // Col B (1): NAME (mapped to role if needed, or adjust depending on your columns)
-                // Let's check headers from screenshot: Timestamp(0), NAME(1), PHONE(2), GENDER(3), EDUCATION(4), LOCATION(5), CURRENT JOB PROFILE(6), SALARY EX(7), JOB APPLIED FOR(8)
-                // Wait! If the user wants to pull job listings from "Main Sheet Form responses 1" starting at AD2 or similar, let's map columns robustly:
-                // Let's map Role/Job Profile from Column I (8) or Column G (6), Location from Column F (5), Salary from Column H (7), Gender from Column D (3), Timestamp from Column A (0)
                 let role = cols[8] ? cols[8].replace(/["']/g, "").trim() : (cols[6] ? cols[6].replace(/["']/g, "").trim() : "");
                 let gender = cols[3] ? cols[3].replace(/["']/g, "").trim().toUpperCase() : "";
                 let salary = cols[7] ? cols[7].replace(/["']/g, "").trim() : "";
@@ -756,18 +769,32 @@
         }
 
         function populateDropdown(dropdownId, items) {
-            const container = document.getElementById(dropdownId);
+            const container = document.querySelector(`#${dropdownId} .dropdown-items-container`);
             let html = '';
             items.forEach(item => {
                 if(item) {
                     html += `
-                        <label class="dropdown-item">
+                        <label class="dropdown-item" data-value="${item.toLowerCase()}">
                             <input type="checkbox" value="${item}" onchange="filterData()"> ${item}
                         </label>
                     `;
                 }
             });
             container.innerHTML = html;
+        }
+
+        // Live filtering inside dropdown search box as requested (type "acc" -> filters matching options instantly)
+        function filterDropdownOptions(dropdownId, query) {
+            const q = query.toLowerCase().trim();
+            const items = document.querySelectorAll(`#${dropdownId} .dropdown-item`);
+            items.forEach(item => {
+                const val = item.getAttribute('data-value');
+                if (val.includes(q)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
 
         function toggleDropdown(dropdownId) {
@@ -931,7 +958,6 @@
             updateLabels();
             const rawSearchVal = document.getElementById('searchInput').value.trim().toUpperCase();
             
-            // Support Multi-Search separated by comma or space
             let searchKeywords = [];
             if (rawSearchVal) {
                 searchKeywords = rawSearchVal.split(/[,]+/).map(k => k.trim()).filter(k => k.length > 0);
@@ -944,7 +970,6 @@
             filteredJobs = jobsData.filter(job => {
                 let matchSearch = true;
                 if (searchKeywords.length > 0) {
-                    // Job matches if its role includes ANY of the comma-separated search keywords (Multi-Search)
                     matchSearch = searchKeywords.some(keyword => job.role.includes(keyword));
                 }
 
@@ -961,6 +986,9 @@
         function resetFilters() {
             document.getElementById('searchInput').value = '';
             document.querySelectorAll('.dropdown-list input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.querySelectorAll('.dropdown-search').forEach(sb => sb.value = '');
+            // Reset visibility of options
+            document.querySelectorAll('.dropdown-item').forEach(item => item.style.display = 'flex');
             updateLabels();
             filteredJobs = [...jobsData];
             renderView(jobsData);
@@ -1043,7 +1071,7 @@
             }
 
             let html = '';
-            data.forEach(job => {
+            data.exports = data.forEach(job => {
                 let badgeClass = 'badge-both';
                 if(job.gender === 'FEMALE') badgeClass = 'badge-female';
                 if(job.gender === 'MALE') badgeClass = 'badge-male';
