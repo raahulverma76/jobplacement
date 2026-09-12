@@ -704,19 +704,26 @@
             </div>
         </div>
 
-        <!-- CANDIDATE DISPATCH SCREEN (FULL WIDTH CANDIDATE LIST) -->
+        <!-- CANDIDATE DISPATCH SCREEN (FULL WIDTH CANDIDATE LIST WITH MULTI-SELECT PROFILE FILTER) -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet</h3>
+                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet (Col G & I Matcher)</h3>
                 <button onclick="switchView('cards')" style="background: #e2e8f0; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
             
             <div class="dispatch-controls">
                 <div class="filter-group">
-                    <label><i class="fa-solid fa-id-card"></i> Filter Profile Column (Current / Applied)</label>
-                    <select id="dispatchProfileFilter" class="search-input" onchange="renderDispatchCandidates()">
-                        <option value="ALL">All Profiles / Categories</option>
-                    </select>
+                    <label><i class="fa-solid fa-id-card"></i> Multi-Select Profiles (Col G & I)</label>
+                    <div class="dropdown-container">
+                        <div class="dropdown-select-btn" onclick="toggleDropdown('dispatchProfileDropdown')">
+                            <span id="dispatchProfileLabel">All Profiles / Categories</span>
+                            <i class="fa-solid fa-chevron-down"></i>
+                        </div>
+                        <div id="dispatchProfileDropdown" class="dropdown-list">
+                            <input type="text" class="dropdown-search" placeholder="Search profile..." oninput="filterDropdownOptions('dispatchProfileDropdown', this.value)">
+                            <div class="dropdown-items-container"></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="filter-group">
                     <label><i class="fa-solid fa-magnifying-glass"></i> Search Name / Phone / Profile</label>
@@ -726,7 +733,7 @@
 
             <div class="dispatch-panel-box">
                 <div class="dispatch-panel-header">
-                    <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Profile</span>
+                    <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Profile(s)</span>
                     <span id="dispatchCandidateCount" class="category-count-badge">0 Candidates</span>
                 </div>
                 <div class="dispatch-list-container" id="dispatchCandidateListContainer">
@@ -832,6 +839,7 @@
             for (let i = 1; i < lines.length; i++) {
                 if (!lines[i].trim()) continue;
                 let cols = lines[i].split(",");
+                // Column G is index 6, Column I is index 8 (0-indexed: B=1, C=2, G=6, I=8)
                 if (cols.length >= 9) {
                     result.push({
                         name: cols[1] ? cols[1].replace(/["']/g, "").trim() : "UNKNOWN",
@@ -970,18 +978,25 @@
         }
 
         function initDispatchProfiles() {
-            const select = document.getElementById('dispatchProfileFilter');
             let profiles = [...new Set([
                 ...jobsData.map(j => j.role),
                 ...mainCandidatesData.map(c => c.currentProfile),
                 ...mainCandidatesData.map(c => c.appliedProfile)
             ])].filter(Boolean).sort();
 
-            let html = '<option value="ALL">All Profiles / Categories</option>';
-            profiles.forEach(p => {
-                html += `<option value="${p}">${p}</option>`;
-            });
-            select.innerHTML = html;
+            populateDropdown('dispatchProfileDropdown', profiles);
+        }
+
+        function updateDispatchProfileLabel() {
+            const selected = getSelectedValues('dispatchProfileDropdown');
+            const labelElem = document.getElementById('dispatchProfileLabel');
+            if(selected.length === 0) {
+                labelElem.innerText = 'All Profiles / Categories';
+            } else if(selected.length === 1) {
+                labelElem.innerText = selected[0];
+            } else {
+                labelElem.innerText = `${selected.length} selected`;
+            }
         }
 
         function hasKeywordMatch(str1, str2) {
@@ -996,21 +1011,24 @@
         }
 
         function renderDispatchCandidates() {
+            updateDispatchProfileLabel();
             const container = document.getElementById('dispatchCandidateListContainer');
-            const profileVal = document.getElementById('dispatchProfileFilter').value.toUpperCase();
+            const selectedProfiles = getSelectedValues('dispatchProfileDropdown').map(p => p.toUpperCase());
             const searchVal = document.getElementById('dispatchSearchInput').value.toUpperCase();
 
             let matched = mainCandidatesData.filter(c => {
                 let curProf = c.currentProfile.toUpperCase();
                 let appProf = c.appliedProfile.toUpperCase();
                 
-                let matchProfile = (profileVal === 'ALL');
+                let matchProfile = (selectedProfiles.length === 0);
                 
                 if (!matchProfile) {
-                    matchProfile = curProf.includes(profileVal) || profileVal.includes(curProf) ||
-                                   appProf.includes(profileVal) || profileVal.includes(appProf) ||
-                                   hasKeywordMatch(curProf, profileVal) ||
-                                   hasKeywordMatch(appProf, profileVal);
+                    matchProfile = selectedProfiles.some(profileVal => {
+                        return curProf.includes(profileVal) || profileVal.includes(curProf) ||
+                               appProf.includes(profileVal) || profileVal.includes(appProf) ||
+                               hasKeywordMatch(curProf, profileVal) ||
+                               hasKeywordMatch(appProf, profileVal);
+                    });
                 }
 
                 let matchSearch = (c.name.toUpperCase().includes(searchVal) || c.phone.includes(searchVal) || curProf.includes(searchVal) || appProf.includes(searchVal));
@@ -1019,10 +1037,11 @@
             });
 
             document.getElementById('dispatchCandidateCount').innerText = `${matched.length} Candidates`;
-            document.getElementById('batchSelectionStatus').innerHTML = `Filtered Profile: <b>${profileVal}</b> (${matched.length} records found)`;
+            let profileStatusText = selectedProfiles.length === 0 ? 'All Profiles' : selectedProfiles.join(', ');
+            document.getElementById('batchSelectionStatus').innerHTML = `Filtered Profile(s): <b>${profileStatusText}</b> (${matched.length} records found)`;
 
             if(matched.length === 0) {
-                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching profile in Main Sheet.</div>`;
+                container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching selected profile(s) in Main Sheet.</div>`;
                 return;
             }
 
@@ -1033,7 +1052,7 @@
                         <div>
                             <strong>${c.name}</strong><br>
                             <span style="font-size:0.78rem; color:var(--primary-dark); font-weight:600;"><i class="fa-solid fa-phone"></i> ${c.phone}</span><br>
-                            <span style="font-size:0.75rem; color:var(--text-muted);">Current: <b>${c.currentProfile || 'N/A'}</b> | Applied: <b>${c.appliedProfile || 'N/A'}</b></span>
+                            <span style="font-size:0.75rem; color:var(--text-muted);">Current (Col G): <b>${c.currentProfile || 'N/A'}</b> | Applied (Col I): <b>${c.appliedProfile || 'N/A'}</b></span>
                         </div>
                         <button class="copy-btn-single" onclick="copySingleCandidate('${c.name}', '${c.phone}', '${c.currentProfile}', '${c.appliedProfile}')">
                             <i class="fa-solid fa-copy"></i> Copy
@@ -1045,22 +1064,24 @@
         }
 
         function copySingleCandidate(name, phone, curProfile, appProfile) {
-            let textToCopy = `Candidate Name: ${name}\nPhone: ${phone}\nCurrent Profile: ${curProfile}\nApplied Profile: ${appProfile}`;
+            let textToCopy = `Candidate Name: ${name}\nPhone: ${phone}\nCurrent Profile (Col G): ${curProfile}\nApplied Profile (Col I): ${appProfile}`;
             navigator.clipboard.writeText(textToCopy).then(() => {
                 alert(`Copied to clipboard!\n\n${textToCopy}`);
             });
         }
 
         function copyBatchCandidates() {
-            const profileVal = document.getElementById('dispatchProfileFilter').value.toUpperCase();
-            let matched = mainCandidatesData.mainCandidatesData || mainCandidatesData.filter(c => {
+            const selectedProfiles = getSelectedValues('dispatchProfileDropdown').map(p => p.toUpperCase());
+            let matched = mainCandidatesData.filter(c => {
                 let curProf = c.currentProfile.toUpperCase();
                 let appProf = c.appliedProfile.toUpperCase();
-                if (profileVal === 'ALL') return true;
-                return curProf.includes(profileVal) || profileVal.includes(curProf) ||
-                       appProf.includes(profileVal) || profileVal.includes(appProf) ||
-                       hasKeywordMatch(curProf, profileVal) ||
-                       hasKeywordMatch(appProf, profileVal);
+                if (selectedProfiles.length === 0) return true;
+                return selectedProfiles.some(profileVal => {
+                    return curProf.includes(profileVal) || profileVal.includes(curProf) ||
+                           appProf.includes(profileVal) || profileVal.includes(appProf) ||
+                           hasKeywordMatch(curProf, profileVal) ||
+                           hasKeywordMatch(appProf, profileVal);
+                });
             });
 
             if (matched.length === 0) {
@@ -1068,11 +1089,12 @@
                 return;
             }
 
+            let profileStatusText = selectedProfiles.length === 0 ? 'All Profiles' : selectedProfiles.join(', ');
             let report = `*CANDIDATE DISPATCH LIST (MAIN SHEET)*\n`;
-            report += `Filter Profile: *${profileVal}*\n\n`;
+            report += `Filter Profile(s): *${profileStatusText}*\n\n`;
 
             matched.forEach((c, index) => {
-                report += `${index + 1}. *${c.name}* - ${c.phone} | Current: ${c.currentProfile || 'N/A'} | Applied: ${c.appliedProfile || 'N/A'}\n`;
+                report += `${index + 1}. *${c.name}* - ${c.phone} | Current (Col G): ${c.currentProfile || 'N/A'} | Applied (Col I): ${c.appliedProfile || 'N/A'}\n`;
             });
 
             navigator.clipboard.writeText(report).then(() => {
@@ -1204,6 +1226,7 @@
             }
 
             let html = '';
+            data.jobsData = data;
             data.forEach(job => {
                 html += `
                     <tr>
@@ -1233,7 +1256,7 @@
             filteredJobs.forEach(j => {
                 message += `• *${j.role}* | ${j.gender} | ${j.salary} | ${j.loc}\n`;
             });
-            message += "\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250 ONLY*";
+            message += "\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250ONLY*";
             const encodedUrl = encodeURIComponent(message);
             window.open(`https://api.whatsapp.com/send?text=${encodedUrl}`, '_blank');
         }
