@@ -707,7 +707,7 @@
             <div class="dispatch-panel-box">
                 <div class="dispatch-panel-header">
                     <span><i class="fa-solid fa-users"></i> Main Sheet Candidates Matching Profile</span>
-                    <span id="dispatchCandidateCount" class="category-count-badge">0 Candidates</span>
+                    <button class="copy-btn-single" onclick="copyBatchCandidates()" style="padding: 6px 12px; font-size: 0.78rem;"><i class="fa-solid fa-copy"></i> Copy All Filtered Candidates</button>
                 </div>
                 <div class="dispatch-list-container" id="dispatchCandidateListContainer">
                     <div style="text-align: center; color: var(--text-muted); padding: 40px;">Loading candidates...</div>
@@ -716,7 +716,7 @@
 
             <div class="batch-copy-bar">
                 <span id="batchSelectionStatus" style="font-size: 0.88rem; font-weight: 600; color: #1e293b;">Showing all matching candidates</span>
-                <button class="copy-btn-single" onclick="copyBatchCandidates()" style="padding: 9px 16px; font-size: 0.85rem;"><i class="fa-solid fa-copy"></i> Copy All Filtered Candidates</button>
+                <span id="dispatchCandidateCount" class="category-count-badge" style="font-size: 0.85rem;">0 Candidates</span>
             </div>
         </div>
     </div>
