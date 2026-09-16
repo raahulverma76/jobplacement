@@ -996,17 +996,6 @@
             }
         }
 
-        function hasKeywordMatch(str1, str2) {
-            let words1 = str1.split(/\s+/);
-            let words2 = str2.split(/\s+/);
-            for(let w1 of words1) {
-                if(w1.length > 2 && words2.some(w2 => w2.includes(w1) || w1.includes(w2))) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
         function parseTimestampToDate(tsStr) {
             if (!tsStr) return null;
             let parts = tsStr.split(' ')[0].split(/[\/\-]/);
@@ -1025,7 +1014,7 @@
         function renderDispatchCandidates() {
             updateDispatchProfileLabel();
             const container = document.getElementById('dispatchCandidateListContainer');
-            const selectedProfiles = getSelectedValues('dispatchProfileDropdown').map(p => p.toUpperCase());
+            const selectedProfiles = getSelectedValues('dispatchProfileDropdown');
             const searchVal = document.getElementById('dispatchSearchInput').value.toUpperCase();
             
             const startDateVal = document.getElementById('dispatchStartDate').value;
@@ -1036,20 +1025,20 @@
             if (endDate) endDate.setHours(23,59,59,999);
 
             let matched = mainCandidatesData.filter(c => {
-                let curProf = c.currentProfile.toUpperCase();
-                let appProf = c.appliedProfile.toUpperCase();
+                let curProf = c.currentProfile;
+                let appProf = c.appliedProfile;
                 
+                // Simplified multi-select matching logic: 
+                // Matches if no profiles selected OR candidate's current/applied profile includes any of the selected profile filters
                 let matchProfile = (selectedProfiles.length === 0);
                 if (!matchProfile) {
-                    matchProfile = selectedProfiles.some(profileVal => {
-                        return curProf.includes(profileVal) || profileVal.includes(curProf) ||
-                               appProf.includes(profileVal) || profileVal.includes(appProf) ||
-                               hasKeywordMatch(curProf, profileVal) ||
-                               hasKeywordMatch(appProf, profileVal);
-                    });
+                    matchProfile = selectedProfiles.some(profileVal => 
+                        curProf.toLowerCase().includes(profileVal.toLowerCase()) || 
+                        appProf.toLowerCase().includes(profileVal.toLowerCase())
+                    );
                 }
 
-                let matchSearch = (c.name.toUpperCase().includes(searchVal) || c.phone.includes(searchVal) || curProf.includes(searchVal) || appProf.includes(searchVal));
+                let matchSearch = (c.name.toUpperCase().includes(searchVal) || c.phone.includes(searchVal) || curProf.toUpperCase().includes(searchVal) || appProf.toUpperCase().includes(searchVal));
 
                 let matchDate = true;
                 if (startDate || endDate) {
@@ -1111,7 +1100,7 @@
         }
 
         function copyBatchCandidates() {
-            const selectedProfiles = getSelectedValues('dispatchProfileDropdown').map(p => p.toUpperCase());
+            const selectedProfiles = getSelectedValues('dispatchProfileDropdown');
             const startDateVal = document.getElementById('dispatchStartDate').value;
             const endDateVal = document.getElementById('dispatchEndDate').value;
             let startDate = startDateVal ? new Date(startDateVal) : null;
@@ -1120,16 +1109,14 @@
             if (endDate) endDate.setHours(23,59,59,999);
 
             let matched = mainCandidatesData.filter(c => {
-                let curProf = c.currentProfile.toUpperCase();
-                let appProf = c.appliedProfile.toUpperCase();
+                let curProf = c.currentProfile;
+                let appProf = c.appliedProfile;
                 let matchProfile = (selectedProfiles.length === 0);
                 if (!matchProfile) {
-                    matchProfile = selectedProfiles.some(profileVal => {
-                        return curProf.includes(profileVal) || profileVal.includes(curProf) ||
-                               appProf.includes(profileVal) || profileVal.includes(appProf) ||
-                               hasKeywordMatch(curProf, profileVal) ||
-                               hasKeywordMatch(appProf, profileVal);
-                    });
+                    matchProfile = selectedProfiles.some(profileVal => 
+                        curProf.toLowerCase().includes(profileVal.toLowerCase()) || 
+                        appProf.toLowerCase().includes(profileVal.toLowerCase())
+                    );
                 }
                 let matchDate = true;
                 if (startDate || endDate) {
