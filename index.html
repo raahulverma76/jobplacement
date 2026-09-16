@@ -670,12 +670,12 @@
                     <i class="fa-solid fa-download"></i> Download Current Image
                 </button>
                 <button class="btn-action btn-bulk" onclick="downloadBulkStatusImages()">
-                    <i class="fa-solid fa-images"></i> Download All Bulk Photos (<span id="bulkCountBadge">0</span> Cards)
+                    <i class="fa-solid fa-images"></i> Download All Category Cards (<span id="bulkCountBadge">0</span> Cards)
                 </button>
             </div>
 
             <div class="status-scroll-container" id="statusScrollContainer">
-                <!-- Multi Status Cards will be dynamically inserted here -->
+                <!-- Category-wise Status Cards will be dynamically inserted here -->
             </div>
         </div>
 
@@ -1250,7 +1250,7 @@
             tbody.innerHTML = html;
         }
 
-        // FULL DYNAMIC CHUNKING (Saari categories aur roles ke mutabiq jitne bhi cards banenge, sab generate honge)
+        // CATEGORY-WISE CHUNKING (Har category/job role ka apna alag status card banega)
         function renderStatusTable(data) {
             const container = document.getElementById('statusScrollContainer');
             
@@ -1260,21 +1260,22 @@
                 return;
             }
 
-            let sortedData = [...data];
+            // Group jobs strictly by category/role
+            let grouped = {};
+            data.forEach(job => {
+                let cat = job.role || "OTHER JOBS";
+                if(!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(job);
+            });
 
-            // 10 items per card taaki text clear rahe aur saari 21-25+ categories alag-alag status cards mein cover ho jayein
-            let chunkSize = 10;
-            let chunks = [];
-            for (let i = 0; i < sortedData.length; i += chunkSize) {
-                chunks.push(sortedData.slice(i, i + chunkSize));
-            }
-
-            document.getElementById('bulkCountBadge').innerText = chunks.length;
+            let categories = Object.keys(grouped);
+            document.getElementById('bulkCountBadge').innerText = categories.length;
 
             let html = '';
-            chunks.forEach((chunk, index) => {
+            categories.forEach((categoryName, index) => {
+                let items = grouped[categoryName];
                 let rowsHtml = '';
-                chunk.forEach(job => {
+                items.forEach(job => {
                     rowsHtml += `
                         <tr>
                             <td>${job.role}</td>
@@ -1289,7 +1290,10 @@
                 html += `
                     <div id="statusGraphicCard_${index}" class="status-card-box">
                         <div class="status-header-banner">
-                            WWW.ABCWALE.COM ${chunks.length > 1 ? `(Part ${index + 1}/${chunks.length})` : ''}
+                            WWW.ABCWALE.COM
+                        </div>
+                        <div style="text-align:center; font-weight:800; font-size:0.9rem; color:#1e293b; margin-bottom:8px; text-transform:uppercase; background:#fef08a; padding:4px; border:1px solid #000;">
+                            Category: ${categoryName} (${items.length} Opening${items.length > 1 ? 's' : ''})
                         </div>
                         <div class="status-table-container">
                             <table class="status-table">
@@ -1324,7 +1328,7 @@
             }
             html2canvas(element, { scale: 3, useCORS: true, allowTaint: true }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'job-openings-status-1.png';
+                link.download = 'job-category-status-1.png';
                 link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
             });
@@ -1337,18 +1341,18 @@
                 return;
             }
 
-            alert(`Generating ${cards.length} status photo(s) in bulk covering all your categories. Please allow downloads.`);
+            alert(`Generating ${cards.length} category status photo(s) in bulk. Please allow downloads.`);
 
             for (let i = 0; i < cards.length; i++) {
                 try {
                     let canvas = await html2canvas(cards[i], { scale: 3, useCORS: true, allowTaint: true });
                     let link = document.createElement('a');
-                    link.download = `job-openings-status-part-${i + 1}.png`;
+                    link.download = `job-category-status-${i + 1}.png`;
                     link.href = canvas.toDataURL('image/png', 1.0);
                     link.click();
                     await new Promise(resolve => setTimeout(resolve, 600));
                 } catch (err) {
-                    console.error(`Error downloading status part ${i + 1}`, err);
+                    console.error(`Error downloading status card ${i + 1}`, err);
                 }
             }
         }
