@@ -707,7 +707,7 @@
         <!-- CANDIDATE DISPATCH SCREEN -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet Form Responses 1</h3>
+                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Main Sheet Candidates Matching Profile</h3>
                 <button onclick="switchView('cards')" style="background: #e2e8f0; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
             
@@ -996,6 +996,17 @@
             }
         }
 
+        function hasKeywordMatch(str1, str2) {
+            let words1 = str1.split(/\s+/);
+            let words2 = str2.split(/\s+/);
+            for(let w1 of words1) {
+                if(w1.length > 2 && words2.some(w2 => w2.includes(w1) || w1.includes(w2))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         function parseTimestampToDate(tsStr) {
             if (!tsStr) return null;
             let parts = tsStr.split(' ')[0].split(/[\/\-]/);
@@ -1014,7 +1025,7 @@
         function renderDispatchCandidates() {
             updateDispatchProfileLabel();
             const container = document.getElementById('dispatchCandidateListContainer');
-            const selectedProfiles = getSelectedValues('dispatchProfileDropdown');
+            const selectedProfiles = getSelectedValues('dispatchProfileDropdown').map(p => p.toUpperCase());
             const searchVal = document.getElementById('dispatchSearchInput').value.toUpperCase();
             
             const startDateVal = document.getElementById('dispatchStartDate').value;
@@ -1025,20 +1036,20 @@
             if (endDate) endDate.setHours(23,59,59,999);
 
             let matched = mainCandidatesData.filter(c => {
-                let curProf = c.currentProfile;
-                let appProf = c.appliedProfile;
+                let curProf = c.currentProfile.toUpperCase();
+                let appProf = c.appliedProfile.toUpperCase();
                 
-                // Simplified multi-select matching logic: 
-                // Matches if no profiles selected OR candidate's current/applied profile includes any of the selected profile filters
                 let matchProfile = (selectedProfiles.length === 0);
                 if (!matchProfile) {
-                    matchProfile = selectedProfiles.some(profileVal => 
-                        curProf.toLowerCase().includes(profileVal.toLowerCase()) || 
-                        appProf.toLowerCase().includes(profileVal.toLowerCase())
-                    );
+                    matchProfile = selectedProfiles.some(profileVal => {
+                        return curProf.includes(profileVal) || profileVal.includes(curProf) ||
+                               appProf.includes(profileVal) || profileVal.includes(appProf) ||
+                               hasKeywordMatch(curProf, profileVal) ||
+                               hasKeywordMatch(appProf, profileVal);
+                    });
                 }
 
-                let matchSearch = (c.name.toUpperCase().includes(searchVal) || c.phone.includes(searchVal) || curProf.toUpperCase().includes(searchVal) || appProf.toUpperCase().includes(searchVal));
+                let matchSearch = (c.name.toUpperCase().includes(searchVal) || c.phone.includes(searchVal) || curProf.includes(searchVal) || appProf.includes(searchVal));
 
                 let matchDate = true;
                 if (startDate || endDate) {
@@ -1100,7 +1111,7 @@
         }
 
         function copyBatchCandidates() {
-            const selectedProfiles = getSelectedValues('dispatchProfileDropdown');
+            const selectedProfiles = getSelectedValues('dispatchProfileDropdown').map(p => p.toUpperCase());
             const startDateVal = document.getElementById('dispatchStartDate').value;
             const endDateVal = document.getElementById('dispatchEndDate').value;
             let startDate = startDateVal ? new Date(startDateVal) : null;
@@ -1109,14 +1120,16 @@
             if (endDate) endDate.setHours(23,59,59,999);
 
             let matched = mainCandidatesData.filter(c => {
-                let curProf = c.currentProfile;
-                let appProf = c.appliedProfile;
+                let curProf = c.currentProfile.toUpperCase();
+                let appProf = c.appliedProfile.toUpperCase();
                 let matchProfile = (selectedProfiles.length === 0);
                 if (!matchProfile) {
-                    matchProfile = selectedProfiles.some(profileVal => 
-                        curProf.toLowerCase().includes(profileVal.toLowerCase()) || 
-                        appProf.toLowerCase().includes(profileVal.toLowerCase())
-                    );
+                    matchProfile = selectedProfiles.some(profileVal => {
+                        return curProf.includes(profileVal) || profileVal.includes(curProf) ||
+                               appProf.includes(profileVal) || profileVal.includes(appProf) ||
+                               hasKeywordMatch(curProf, profileVal) ||
+                               hasKeywordMatch(appProf, profileVal);
+                    });
                 }
                 let matchDate = true;
                 if (startDate || endDate) {
@@ -1136,7 +1149,6 @@
                 return;
             }
 
-            // ONLY CANDIDATE DETAILS - NO HEADERS / NO LABELS ABOUT FILTERS
             let report = "";
             matched.forEach((c, index) => {
                 report += `${index + 1}. Name: ${c.name} | Phone: ${c.phone} | Date: ${c.timestamp || 'N/A'} | Current: ${c.currentProfile || 'N/A'} | Applied: ${c.appliedProfile || 'N/A'}\n`;
