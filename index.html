@@ -337,12 +337,17 @@
             min-width: 160px;
         }
         .btn-download { background: #059669; color: white; }
+        .btn-bulk { background: #7c3aed; color: white; }
         .btn-whatsapp { background: #25D366; color: white; }
         
         .status-scroll-container {
             width: 100%;
             overflow-x: auto;
             padding-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
         }
 
         .status-card-box {
@@ -350,9 +355,9 @@
             padding: 14px;
             border: 2px solid #000;
             width: 600px;
-            margin: 0 auto;
             box-sizing: border-box;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            position: relative;
         }
 
         .status-header-banner {
@@ -673,41 +678,23 @@
                 <button class="btn-action btn-download" onclick="downloadStatusImage()">
                     <i class="fa-solid fa-download"></i> Download Image
                 </button>
+                <button class="btn-action btn-bulk" onclick="downloadBulkStatusImages()">
+                    <i class="fa-solid fa-images"></i> Download All Bulk Status Photos (<span id="bulkCountBadge">0</span>)
+                </button>
                 <button class="btn-action btn-whatsapp" onclick="shareToWhatsApp()">
                     <i class="fa-brands fa-whatsapp"></i> Share to WhatsApp
                 </button>
             </div>
 
-            <div class="status-scroll-container">
-                <div id="statusGraphicCard" class="status-card-box">
-                    <div class="status-header-banner">
-                        WWW.ABCWALE.COM
-                    </div>
-                    <div class="status-table-container">
-                        <table class="status-table">
-                            <thead>
-                                <tr>
-                                    <th>JOB ROLE</th>
-                                    <th>GENDER</th>
-                                    <th>SALARY</th>
-                                    <th>LOCATION</th>
-                                    <th>CITY</th>
-                                </tr>
-                            </thead>
-                            <tbody id="statusTableBody"></tbody>
-                        </table>
-                    </div>
-                    <div class="status-footer-banner">
-                        1 YEAR ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250 ONLY
-                    </div>
-                </div>
+            <div class="status-scroll-container" id="statusScrollContainer">
+                <!-- Multi Status Cards will be dynamically inserted here -->
             </div>
         </div>
 
         <!-- CANDIDATE DISPATCH SCREEN -->
         <div class="dispatch-wrapper" id="dispatchWrapper">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
-                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Main Sheet Candidates Matching Profile</h3>
+                <h3 style="font-size: 1.15rem; color: #1e293b;"><i class="fa-solid fa-user-check" style="color:var(--primary);"></i> Candidate Dispatch — Main Sheet Form Responses 1</h3>
                 <button onclick="switchView('cards')" style="background: #e2e8f0; border:none; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; font-size:0.8rem;"><i class="fa-solid fa-xmark"></i> Close</button>
             </div>
             
@@ -1275,36 +1262,107 @@
             tbody.innerHTML = html;
         }
 
+        // AUTO CATEGORY WISE & MULTI STATUS CARD BUILDER
         function renderStatusTable(data) {
-            const tbody = document.getElementById('statusTableBody');
+            const container = document.getElementById('statusScrollContainer');
+            document.getElementById('bulkCountBadge').innerText = data.length > 0 ? Math.ceil(data.length / 10) : 0;
+            
             if(data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 20px;">No jobs match selected filters</td></tr>`;
+                container.innerHTML = `<div style="text-align:center; padding: 20px; background:#fff; border-radius:8px; width:100%;">No jobs match selected filters</div>`;
                 return;
             }
 
+            // Sort/Group data category/role wise automatically
+            let sortedData = [...data].sort((a, b) => a.role.localeCompare(b.role));
+
+            // Chunk data into pages of 10 items per status image for readability
+            let chunks = [];
+            for (let i = 0; i < sortedData.length; i += 10) {
+                chunks.push(sortedData.slice(i, i + 10));
+            }
+
             let html = '';
-            data.forEach(job => {
+            chunks.forEach((chunk, index) => {
+                let rowsHtml = '';
+                chunk.forEach(job => {
+                    rowsHtml += `
+                        <tr>
+                            <td>${job.role}</td>
+                            <td style="text-align:center;">${job.gender}</td>
+                            <td style="text-align:center;">${job.salary}</td>
+                            <td>${job.loc}</td>
+                            <td style="text-align:center;">${job.city}</td>
+                        </tr>
+                    `;
+                });
+
                 html += `
-                    <tr>
-                        <td>${job.role}</td>
-                        <td style="text-align:center;">${job.gender}</td>
-                        <td style="text-align:center;">${job.salary}</td>
-                        <td>${job.loc}</td>
-                        <td style="text-align:center;">${job.city}</td>
-                    </tr>
+                    <div id="statusGraphicCard_${index}" class="status-card-box">
+                        <div class="status-header-banner">
+                            WWW.ABCWALE.COM ${chunks.length > 1 ? `(Part ${index + 1}/${chunks.length})` : ''}
+                        </div>
+                        <div class="status-table-container">
+                            <table class="status-table">
+                                <thead>
+                                    <tr>
+                                        <th>JOB ROLE</th>
+                                        <th>GENDER</th>
+                                        <th>SALARY</th>
+                                        <th>LOCATION</th>
+                                        <th>CITY</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rowsHtml}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="status-footer-banner">
+                            1 YEAR ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250 ONLY
+                        </div>
+                    </div>
                 `;
             });
-            tbody.innerHTML = html;
+            container.innerHTML = html;
         }
 
         function downloadStatusImage() {
-            const element = document.getElementById('statusGraphicCard');
+            const element = document.getElementById('statusGraphicCard_0');
+            if(!element) {
+                alert("No status card available to download!");
+                return;
+            }
             html2canvas(element, { scale: 3, useCORS: true, allowTaint: true }).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'job-openings-status.png';
+                link.download = 'job-openings-status-1.png';
                 link.href = canvas.toDataURL('image/png', 1.0);
                 link.click();
             });
+        }
+
+        // MULTI PHOTO BULK DOWNLOAD FUNCTION
+        async function downloadBulkStatusImages() {
+            let cards = document.querySelectorAll('.status-card-box');
+            if (cards.length === 0) {
+                alert("No status cards available for bulk download!");
+                return;
+            }
+
+            alert(`Generating ${cards.length} status photo(s) in bulk. Please allow downloads if prompted by your browser.`);
+
+            for (let i = 0; i < cards.length; i++) {
+                try {
+                    let canvas = await html2canvas(cards[i], { scale: 3, useCORS: true, allowTaint: true });
+                    let link = document.createElement('a');
+                    link.download = `job-openings-status-part-${i + 1}.png`;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+                    // Small delay between downloads to prevent browser blocking multiple files
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                } catch (err) {
+                    console.error(`Error downloading status part ${i + 1}`, err);
+                }
+            }
         }
 
         function shareToWhatsApp() {
