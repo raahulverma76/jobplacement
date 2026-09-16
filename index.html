@@ -1250,7 +1250,7 @@
             tbody.innerHTML = html;
         }
 
-        // FULL CATEGORIES & CHUNKING FIX (12 items per card neatly organized)
+        // FULL DYNAMIC CHUNKING (Saari categories aur roles ke mutabiq jitne bhi cards banenge, sab generate honge)
         function renderStatusTable(data) {
             const container = document.getElementById('statusScrollContainer');
             
@@ -1260,21 +1260,10 @@
                 return;
             }
 
-            let grouped = {};
-            data.forEach(job => {
-                if(!grouped[job.role]) grouped[job.role] = [];
-                grouped[job.role].push(job);
-            });
+            let sortedData = [...data];
 
-            let sortedData = [];
-            for(let role in grouped) {
-                grouped[role].forEach(job => {
-                    sortedData.push(job);
-                });
-            }
-
-            // Increased chunk limit to 12 items per card so all categories render across multiple cards instead of stopping early
-            let chunkSize = 12;
+            // 10 items per card taaki text clear rahe aur saari 21-25+ categories alag-alag status cards mein cover ho jayein
+            let chunkSize = 10;
             let chunks = [];
             for (let i = 0; i < sortedData.length; i += chunkSize) {
                 chunks.push(sortedData.slice(i, i + chunkSize));
@@ -1348,7 +1337,7 @@
                 return;
             }
 
-            alert(`Generating ${cards.length} status photo(s) in bulk covering all categories. Please allow downloads.`);
+            alert(`Generating ${cards.length} status photo(s) in bulk covering all your categories. Please allow downloads.`);
 
             for (let i = 0; i < cards.length; i++) {
                 try {
