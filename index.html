@@ -338,7 +338,6 @@
         }
         .btn-download { background: #059669; color: white; }
         .btn-bulk { background: #7c3aed; color: white; }
-        .btn-whatsapp { background: #25D366; color: white; }
         
         .status-scroll-container {
             width: 100%;
@@ -552,14 +551,6 @@
             flex-wrap: wrap;
             gap: 10px;
         }
-
-        @media (max-width: 600px) {
-            body { padding: 8px; }
-            header { padding: 12px; }
-            .header-title h1 { font-size: 1.1rem; }
-            .switch-btn { padding: 8px 10px; font-size: 0.8rem; }
-            .filter-panel { grid-template-columns: 1fr; gap: 10px; }
-        }
     </style>
 </head>
 <body>
@@ -676,13 +667,10 @@
         <div class="status-generator-wrapper" id="statusWrapper">
             <div class="status-actions">
                 <button class="btn-action btn-download" onclick="downloadStatusImage()">
-                    <i class="fa-solid fa-download"></i> Download Image
+                    <i class="fa-solid fa-download"></i> Download Current Image
                 </button>
                 <button class="btn-action btn-bulk" onclick="downloadBulkStatusImages()">
-                    <i class="fa-solid fa-images"></i> Download All Bulk Photos (<span id="bulkCountBadge">0</span>)
-                </button>
-                <button class="btn-action btn-whatsapp" onclick="shareBulkPhotosToWhatsApp()">
-                    <i class="fa-brands fa-whatsapp"></i> Share All to WhatsApp
+                    <i class="fa-solid fa-images"></i> Download All Bulk Photos (<span id="bulkCountBadge">0</span> Cards)
                 </button>
             </div>
 
@@ -1262,24 +1250,22 @@
             tbody.innerHTML = html;
         }
 
-        // AUTO EXACT CATEGORY CARD & MULTI STATUS BUILDER
+        // FULL CATEGORIES & CHUNKING FIX (12 items per card neatly organized)
         function renderStatusTable(data) {
             const container = document.getElementById('statusScrollContainer');
-            document.getElementById('bulkCountBadge').innerText = data.length > 0 ? Math.ceil(data.length / 10) : 0;
             
             if(data.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding: 20px; background:#fff; border-radius:8px; width:100%;">No jobs match selected filters</div>`;
+                document.getElementById('bulkCountBadge').innerText = 0;
                 return;
             }
 
-            // Using exactly the same grouped categories map reference logic as category cards view
             let grouped = {};
             data.forEach(job => {
                 if(!grouped[job.role]) grouped[job.role] = [];
                 grouped[job.role].push(job);
             });
 
-            // Flatten grouped structure neatly or chunk raw elements keeping category order intact
             let sortedData = [];
             for(let role in grouped) {
                 grouped[role].forEach(job => {
@@ -1287,10 +1273,14 @@
                 });
             }
 
+            // Increased chunk limit to 12 items per card so all categories render across multiple cards instead of stopping early
+            let chunkSize = 12;
             let chunks = [];
-            for (let i = 0; i < sortedData.length; i += 10) {
-                chunks.push(sortedData.slice(i, i + 10));
+            for (let i = 0; i < sortedData.length; i += chunkSize) {
+                chunks.push(sortedData.slice(i, i + chunkSize));
             }
+
+            document.getElementById('bulkCountBadge').innerText = chunks.length;
 
             let html = '';
             chunks.forEach((chunk, index) => {
@@ -1358,7 +1348,7 @@
                 return;
             }
 
-            alert(`Generating ${cards.length} status photo(s) in bulk. Please allow downloads.`);
+            alert(`Generating ${cards.length} status photo(s) in bulk covering all categories. Please allow downloads.`);
 
             for (let i = 0; i < cards.length; i++) {
                 try {
@@ -1367,55 +1357,9 @@
                     link.download = `job-openings-status-part-${i + 1}.png`;
                     link.href = canvas.toDataURL('image/png', 1.0);
                     link.click();
-                    await new Promise(resolve => setTimeout(resolve, 500));
+                    await new Promise(resolve => setTimeout(resolve, 600));
                 } catch (err) {
                     console.error(`Error downloading status part ${i + 1}`, err);
-                }
-            }
-        }
-
-        // DIRECT BULK WHATSAPP PHOTO SHARING FUNCTION
-        async function shareBulkPhotosToWhatsApp() {
-            let cards = document.querySelectorAll('.status-card-box');
-            if (cards.length === 0) {
-                alert("No status cards available to share!");
-                return;
-            }
-
-            alert("Preparing images for WhatsApp sharing. Your browser will prompt file shares or text sharing sequentially.");
-
-            // First share text context
-            let message = "*WWW.ABCWALE.COM*\n\n*Latest Job Openings List:* 👇\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250 ONLY*";
-            const encodedUrl = encodeURIComponent(message);
-            window.open(`https://api.whatsapp.com/send?text=${encodedUrl}`, '_blank');
-
-            // Then download/prompt image files sequentially so they can be attached directly to WhatsApp chats easily
-            for (let i = 0; i < cards.length; i++) {
-                try {
-                    let canvas = await html2canvas(cards[i], { scale: 3, useCORS: true, allowTaint: true });
-                    canvas.toBlob(async (blob) => {
-                        let file = new File([blob], `job-status-part-${i + 1}.png`, { type: 'image/png' });
-                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                            try {
-                                await navigator.share({
-                                    files: [file],
-                                    title: 'Job Openings Status',
-                                    text: `Job Openings Status Part ${i + 1} - WWW.ABCWALE.COM`
-                                });
-                            } catch (shareErr) {
-                                console.log("Native share canceled or failed", shareErr);
-                            }
-                        } else {
-                            // Fallback download if direct share api isn't supported on desktop browser
-                            let link = document.createElement('a');
-                            link.download = `whatsapp-job-status-${i + 1}.png`;
-                            link.href = URL.createObjectURL(blob);
-                            link.click();
-                        }
-                    }, 'image/png');
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                } catch (err) {
-                    console.error("Error sharing image", err);
                 }
             }
         }
