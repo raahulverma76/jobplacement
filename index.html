@@ -346,7 +346,7 @@
             padding-bottom: 8px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
             align-items: center;
         }
 
@@ -679,10 +679,10 @@
                     <i class="fa-solid fa-download"></i> Download Image
                 </button>
                 <button class="btn-action btn-bulk" onclick="downloadBulkStatusImages()">
-                    <i class="fa-solid fa-images"></i> Download All Bulk Status Photos (<span id="bulkCountBadge">0</span>)
+                    <i class="fa-solid fa-images"></i> Download All Bulk Photos (<span id="bulkCountBadge">0</span>)
                 </button>
-                <button class="btn-action btn-whatsapp" onclick="shareToWhatsApp()">
-                    <i class="fa-brands fa-whatsapp"></i> Share to WhatsApp
+                <button class="btn-action btn-whatsapp" onclick="shareBulkPhotosToWhatsApp()">
+                    <i class="fa-brands fa-whatsapp"></i> Share All to WhatsApp
                 </button>
             </div>
 
@@ -1262,7 +1262,7 @@
             tbody.innerHTML = html;
         }
 
-        // AUTO CATEGORY WISE & MULTI STATUS CARD BUILDER
+        // AUTO EXACT CATEGORY CARD & MULTI STATUS BUILDER
         function renderStatusTable(data) {
             const container = document.getElementById('statusScrollContainer');
             document.getElementById('bulkCountBadge').innerText = data.length > 0 ? Math.ceil(data.length / 10) : 0;
@@ -1272,10 +1272,21 @@
                 return;
             }
 
-            // Sort/Group data category/role wise automatically
-            let sortedData = [...data].sort((a, b) => a.role.localeCompare(b.role));
+            // Using exactly the same grouped categories map reference logic as category cards view
+            let grouped = {};
+            data.forEach(job => {
+                if(!grouped[job.role]) grouped[job.role] = [];
+                grouped[job.role].push(job);
+            });
 
-            // Chunk data into pages of 10 items per status image for readability
+            // Flatten grouped structure neatly or chunk raw elements keeping category order intact
+            let sortedData = [];
+            for(let role in grouped) {
+                grouped[role].forEach(job => {
+                    sortedData.push(job);
+                });
+            }
+
             let chunks = [];
             for (let i = 0; i < sortedData.length; i += 10) {
                 chunks.push(sortedData.slice(i, i + 10));
@@ -1340,7 +1351,6 @@
             });
         }
 
-        // MULTI PHOTO BULK DOWNLOAD FUNCTION
         async function downloadBulkStatusImages() {
             let cards = document.querySelectorAll('.status-card-box');
             if (cards.length === 0) {
@@ -1348,7 +1358,7 @@
                 return;
             }
 
-            alert(`Generating ${cards.length} status photo(s) in bulk. Please allow downloads if prompted by your browser.`);
+            alert(`Generating ${cards.length} status photo(s) in bulk. Please allow downloads.`);
 
             for (let i = 0; i < cards.length; i++) {
                 try {
@@ -1357,7 +1367,6 @@
                     link.download = `job-openings-status-part-${i + 1}.png`;
                     link.href = canvas.toDataURL('image/png', 1.0);
                     link.click();
-                    // Small delay between downloads to prevent browser blocking multiple files
                     await new Promise(resolve => setTimeout(resolve, 500));
                 } catch (err) {
                     console.error(`Error downloading status part ${i + 1}`, err);
@@ -1365,14 +1374,50 @@
             }
         }
 
-        function shareToWhatsApp() {
-            let message = "*WWW.ABCWALE.COM*\n\n*Latest Job Openings:*\n";
-            filteredJobs.forEach(j => {
-                message += `• *${j.role}* | ${j.gender} | ${j.salary} | ${j.loc}\n`;
-            });
-            message += "\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250ONLY*";
+        // DIRECT BULK WHATSAPP PHOTO SHARING FUNCTION
+        async function shareBulkPhotosToWhatsApp() {
+            let cards = document.querySelectorAll('.status-card-box');
+            if (cards.length === 0) {
+                alert("No status cards available to share!");
+                return;
+            }
+
+            alert("Preparing images for WhatsApp sharing. Your browser will prompt file shares or text sharing sequentially.");
+
+            // First share text context
+            let message = "*WWW.ABCWALE.COM*\n\n*Latest Job Openings List:* 👇\n*1 year ACCIDENTAL INSURANCE OF 5 LAKH AT RS 250 ONLY*";
             const encodedUrl = encodeURIComponent(message);
             window.open(`https://api.whatsapp.com/send?text=${encodedUrl}`, '_blank');
+
+            // Then download/prompt image files sequentially so they can be attached directly to WhatsApp chats easily
+            for (let i = 0; i < cards.length; i++) {
+                try {
+                    let canvas = await html2canvas(cards[i], { scale: 3, useCORS: true, allowTaint: true });
+                    canvas.toBlob(async (blob) => {
+                        let file = new File([blob], `job-status-part-${i + 1}.png`, { type: 'image/png' });
+                        if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                            try {
+                                await navigator.share({
+                                    files: [file],
+                                    title: 'Job Openings Status',
+                                    text: `Job Openings Status Part ${i + 1} - WWW.ABCWALE.COM`
+                                });
+                            } catch (shareErr) {
+                                console.log("Native share canceled or failed", shareErr);
+                            }
+                        } else {
+                            // Fallback download if direct share api isn't supported on desktop browser
+                            let link = document.createElement('a');
+                            link.download = `whatsapp-job-status-${i + 1}.png`;
+                            link.href = URL.createObjectURL(blob);
+                            link.click();
+                        }
+                    }, 'image/png');
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                } catch (err) {
+                    console.error("Error sharing image", err);
+                }
+            }
         }
 
         initApp();
