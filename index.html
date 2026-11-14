@@ -1107,7 +1107,33 @@
 
                     if (freshJobs.length > 0 && freshCandidates.length > 0) {
                         jobsData = freshJobs;
-                        mainCandidatesData = freshCandidates;
+                        
+                        // Smart Merge: Purane numbers/candidates wese ke wese rahenge, sirf naye ya updated candidates merge honge
+                        const existingMap = new Map();
+                        mainCandidatesData.forEach(c => {
+                            const k = c.normPhone || c.phone || c.name;
+                            if (k) existingMap.set(k, c);
+                        });
+
+                        freshCandidates.forEach(fc => {
+                            const k = fc.normPhone || fc.phone || fc.name;
+                            if (!existingMap.has(k)) {
+                                mainCandidatesData.unshift(fc); // Naya candidate top par add hoga
+                            } else {
+                                const existing = existingMap.get(k);
+                                existing.timestamp = fc.timestamp;
+                                existing.tsMillis = fc.tsMillis;
+                                existing.currentProfile = fc.currentProfile;
+                                existing.appliedProfile = fc.appliedProfile;
+                                existing.expectedSalary = fc.expectedSalary;
+                                existing.searchableBlob = fc.searchableBlob;
+                            }
+                        });
+
+                        mainCandidatesData.sort((a, b) => {
+                            if (b.tsMillis !== a.tsMillis) return b.tsMillis - a.tsMillis;
+                            return (b.rowIndex || 0) - (a.rowIndex || 0);
+                        });
 
                         localStorage.setItem(CACHE_KEY_JOBS, JSON.stringify(jobsData));
                         localStorage.setItem(CACHE_KEY_CANDIDATES, JSON.stringify(mainCandidatesData));
