@@ -557,70 +557,6 @@
             margin-bottom: 15px;
         }
 
-        /* WhatsApp & Export Action Bar */
-        .whatsapp-dispatch-bar {
-            background: #ecfdf5;
-            border: 1px solid #a7f3d0;
-            border-radius: 10px;
-            padding: 12px 14px;
-            margin-bottom: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .wa-input-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            flex: 1;
-            min-width: 260px;
-        }
-        .wa-input-group input {
-            padding: 8px 12px;
-            border: 1px solid #6ee7b7;
-            border-radius: 7px;
-            font-size: 0.85rem;
-            outline: none;
-            width: 200px;
-            background: #fff;
-        }
-        .wa-action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .btn-wa-send {
-            background: #16a34a;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 7px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-wa-send:hover { background: #15803d; }
-        .btn-csv-export {
-            background: #0284c7;
-            color: white;
-            border: none;
-            padding: 8px 14px;
-            border-radius: 7px;
-            font-size: 0.82rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-        }
-        .btn-csv-export:hover { background: #0369a1; }
-
         .dispatch-panel-box {
             border: 1px solid var(--border);
             border-radius: 10px;
@@ -701,19 +637,6 @@
             gap: 5px;
         }
         .copy-btn-single:hover { background: #047857; }
-
-        .batch-copy-bar {
-            margin-top: 14px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #eff6ff;
-            padding: 12px 16px;
-            border-radius: 8px;
-            border: 1px solid #bfdbfe;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
 
         /* Toast notification */
         .toast-msg {
@@ -902,8 +825,6 @@
                 </div>
             </div>
 
-
-
             <div class="dispatch-panel-box">
                 <div class="dispatch-panel-header">
                     <span><i class="fa-solid fa-users"></i> Matched Candidates (Sorted Newest Date on Top)</span>
@@ -916,8 +837,6 @@
                     <div style="text-align: center; color: var(--text-muted); padding: 40px;">Loading candidates...</div>
                 </div>
             </div>
-
-
         </div>
     </div>
 
@@ -1091,7 +1010,7 @@
                 } catch(e) {}
             }
 
-            // 2. Background live fetch from Google Sheets so latest data/new candidates update automatically on every open!
+            // 2. Background live fetch from Google Sheets and smart merging
             try {
                 const [jobsRes, mainRes] = await Promise.all([
                     fetch(sheetCsvUrl),
@@ -1214,13 +1133,11 @@
                 }
             }
 
-            // Sort strictly NEWEST FIRST
             rawList.sort((a, b) => {
                 if (b.tsMillis !== a.tsMillis) return b.tsMillis - a.tsMillis;
                 return b.rowIndex - a.rowIndex;
             });
 
-            // Deduplicate by 10-digit phone number (keeping newest)
             const seenPhones = new Map();
             const deduplicated = [];
 
@@ -1471,7 +1388,6 @@
             const titleLabel = searchInputVal ? `Profile: "${searchInputVal.toUpperCase()}"` : 'All Candidates (Newest First)';
             document.getElementById('activeDispatchTitle').innerText = titleLabel;
             document.getElementById('dispatchCandidateCount').innerText = `${matched.length} Candidates Found`;
-            document.getElementById('batchSelectionStatus').innerHTML = `Showing <b>${matched.length}</b> matching candidates (Newest listing date first)`;
 
             if(matched.length === 0) {
                 container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 30px;">No candidates found matching this profile/date filter.</div>`;
@@ -1517,7 +1433,7 @@
             });
 
             if (matched.length > 300) {
-                html += `<div style="text-align:center; padding:12px; font-size:0.82rem; color:#475569; background:#e2e8f0; border-radius:8px;">Showing newest 300 of ${matched.length} candidates. Use "Download CSV" or "Copy All" to export all ${matched.length} records.</div>`;
+                html += `<div style="text-align:center; padding:12px; font-size:0.82rem; color:#475569; background:#e2e8f0; border-radius:8px;">Showing newest 300 of ${matched.length} candidates to prevent mobile lag.</div>`;
             }
 
             container.innerHTML = html;
@@ -1536,79 +1452,6 @@
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast(`Copied ${c.name}'s full details!`);
             });
-        }
-
-        function copyBatchCandidates() {
-            if (currentFilteredCandidates.length === 0) {
-                showToast("No candidates available to copy.");
-                return;
-            }
-            const roleTitle = document.getElementById('dispatchSearchInput').value.trim().toUpperCase() || "MATCHED";
-            let report = `CANDIDATE FOLLOW-UP LIST (${roleTitle} — ${currentFilteredCandidates.length} Candidates)\n\n`;
-            currentFilteredCandidates.forEach((c, index) => {
-                report += `${index + 1}. ${c.name} | ${c.phone} | Date: ${c.timestamp || 'N/A'} | Edu: ${c.education || '-'} | Current: ${c.currentProfile || '-'} | Applied: ${c.appliedProfile || '-'}\n`;
-            });
-
-            navigator.clipboard.writeText(report.trim()).then(() => {
-                showToast(`Copied all ${currentFilteredCandidates.length} candidates to clipboard!`);
-            });
-        }
-
-        function shareToWhatsApp() {
-            if (currentFilteredCandidates.length === 0) {
-                showToast("No candidates to share!");
-                return;
-            }
-            let rawPhone = document.getElementById('targetWhatsappNumber').value.replace(/\D/g, '');
-            if (rawPhone.length === 10) rawPhone = '91' + rawPhone;
-
-            const limitVal = document.getElementById('waLimitSelect').value;
-            const listToSend = limitVal === 'ALL' ? currentFilteredCandidates : currentFilteredCandidates.slice(0, parseInt(limitVal, 10));
-            const roleLabel = document.getElementById('dispatchSearchInput').value.trim().toUpperCase() || "GENERAL";
-
-            let msg = `Hello, here are the candidate details for *${roleLabel}* (Newest First) — you can take follow-up directly:\n\n`;
-            listToSend.forEach((c, idx) => {
-                msg += `*${idx + 1}. ${c.name}* – ${c.phone}\n`;
-                msg += `Date: ${c.timestamp || 'N/A'} | Edu: ${c.education || 'N/A'}\n`;
-                msg += `Profile: ${c.currentProfile || 'N/A'} | Applied: ${c.appliedProfile || 'N/A'}\n\n`;
-            });
-
-            const encodedText = encodeURIComponent(msg.trim());
-            const waUrl = rawPhone ? `https://wa.me/${rawPhone}?text=${encodedText}` : `https://wa.me/?text=${encodedText}`;
-            window.open(waUrl, '_blank');
-        }
-
-        function downloadFilteredCSV() {
-            if (currentFilteredCandidates.length === 0) {
-                showToast("No candidates to export!");
-                return;
-            }
-            const roleSlug = (document.getElementById('dispatchSearchInput').value.trim() || "All_Candidates").replace(/[^a-zA-Z0-9]/g, '_');
-            const headers = ["Sr No", "Listing Date", "Candidate Name", "Phone Number", "Gender", "Education", "Location", "Current Profile", "Expected Salary", "Applied For"];
-            
-            let csvContent = headers.join(",") + "\n";
-            currentFilteredCandidates.forEach((c, idx) => {
-                const row = [
-                    idx + 1,
-                    `"${(c.timestamp || '').replace(/"/g, '""')}"`,
-                    `"${(c.name || '').replace(/"/g, '""')}"`,
-                    `"${(c.phone || '').replace(/"/g, '""')}"`,
-                    `"${(c.gender || '').replace(/"/g, '""')}"`,
-                    `"${(c.education || '').replace(/"/g, '""')}"`,
-                    `"${(c.location || '').replace(/"/g, '""')}"`,
-                    `"${(c.currentProfile || '').replace(/"/g, '""')}"`,
-                    `"${(c.expectedSalary || '').replace(/"/g, '""')}"`,
-                    `"${(c.appliedProfile || '').replace(/"/g, '""')}"`
-                ];
-                csvContent += row.join(",") + "\n";
-            });
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `${roleSlug}_${currentFilteredCandidates.length}_Candidates.csv`;
-            link.click();
-            showToast(`Downloaded ${roleSlug}_${currentFilteredCandidates.length}_Candidates.csv`);
         }
 
         function filterData() {
@@ -1707,7 +1550,7 @@
                             </div>
                             <div class="category-details">
                                 ${subItemsHtml}
-                            </div> मैंने इसे पूरा अपडेट कर दिया है
+                            </div>
                         </div>
                     </div>
                 `;
