@@ -902,28 +902,7 @@
                 </div>
             </div>
 
-            <!-- WhatsApp & File Export Bar -->
-            <div class="whatsapp-dispatch-bar">
-                <div class="wa-input-group">
-                    <span style="font-size:0.82rem; font-weight:700; color:#065f46;"><i class="fa-brands fa-whatsapp" style="font-size:1rem;"></i> Share Follow-Up List:</span>
-                    <input type="text" id="targetWhatsappNumber" placeholder="Enter WhatsApp No (e.g. 9876543210)">
-                    <select id="waLimitSelect" style="padding:8px; border:1px solid #6ee7b7; border-radius:7px; font-size:0.82rem; background:#fff;">
-                        <option value="10">Top 10 Newest</option>
-                        <option value="20">Top 20 Newest</option>
-                        <option value="30">Top 30 Newest</option>
-                        <option value="50">Top 50 Newest</option>
-                        <option value="ALL">All Filtered</option>
-                    </select>
-                </div>
-                <div class="wa-action-buttons">
-                    <button class="btn-wa-send" onclick="shareToWhatsApp()">
-                        <i class="fa-brands fa-whatsapp"></i> Send on WhatsApp
-                    </button>
-                    <button class="btn-csv-export" onclick="downloadFilteredCSV()">
-                        <i class="fa-solid fa-file-csv"></i> Download CSV File
-                    </button>
-                </div>
-            </div>
+
 
             <div class="dispatch-panel-box">
                 <div class="dispatch-panel-header">
@@ -938,12 +917,7 @@
                 </div>
             </div>
 
-            <div class="batch-copy-bar">
-                <span id="batchSelectionStatus" style="font-size: 0.85rem; font-weight: 600; color: #1e293b;">Showing all candidates</span>
-                <button class="copy-btn-single" onclick="copyBatchCandidates()" style="padding: 9px 16px; font-size: 0.84rem;">
-                    <i class="fa-solid fa-copy"></i> Copy All Details for Phone Follow-Up
-                </button>
-            </div>
+
         </div>
     </div>
 
